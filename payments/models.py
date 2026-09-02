@@ -1,3 +1,29 @@
+from django.conf import settings
 from django.db import models
+from bookings.models import Booking
 
-# Create your models here.
+class Invoice(models.Model):
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='invoice')
+    number = models.CharField(max_length=40, unique=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    due_date = models.DateField(null=True, blank=True)
+    is_paid = models.BooleanField(default=False)
+    issued_at = models.DateTimeField(auto_now_add=True)
+
+class Transaction(models.Model):
+    class Status(models.TextChoices):
+        INITIATED = 'initiated', 'Initiated'
+        SUCCESS = 'success', 'Success'
+        FAILED = 'failed', 'Failed'
+    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name='transactions')
+    payer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    provider = models.CharField(max_length=30, default='mpesa')
+    provider_reference = models.CharField(max_length=120, blank=True, unique=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.INITIATED)
+    raw_response = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Payment(Transaction):
+    class Meta:
+        proxy = True
