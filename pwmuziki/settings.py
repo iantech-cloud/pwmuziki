@@ -37,6 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users',
+    'bookings',
+    'portfolio',
+    'payments',
+    'reviews',
 ]
 
 MIDDLEWARE = [
@@ -50,11 +55,16 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'pwmuziki.urls'
+AUTH_USER_MODEL = 'users.User'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'home'
+
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -115,6 +125,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+MPESA_CONSUMER_KEY = ''
+MPESA_CONSUMER_SECRET = ''
+MPESA_SHORTCODE = ''
+MPESA_PASSKEY = ''
+MPESA_CALLBACK_URL = ''
+MPESA_AUTH_URL = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+MPESA_STK_URL = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
 
 
 # Email
