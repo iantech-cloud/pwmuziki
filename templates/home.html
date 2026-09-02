@@ -1,1 +1,348 @@
-{% extends 'base.html' %}{% block title %}Find your photographer | Pwmuziki{% endblock %}{% block content %}<section class="card"><h1>Photography for the moments that matter.</h1><p>Discover trusted photographers, explore their work, and book with confidence.</p><a class="button" href="{% url 'login' %}">Get started</a></section><h2>Featured photographers</h2><div class="grid">{% for photographer in photographers %}<article class="card"><h3>{{ photographer.get_full_name|default:photographer.username }}</h3><p>{{ photographer.profile.bio|default:'Professional photographer' }}</p></article>{% empty %}<div class="card"><p>Photographers will appear here as they join Pwmuziki.</p></div>{% endfor %}</div>{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}
+    Find Your Photographer | Pwmuziki
+{% endblock %}
+
+
+{% block content %}
+
+<!-- =====================================
+     HERO SECTION
+===================================== -->
+
+<section class="hero">
+
+    <div class="hero-content">
+
+        <div class="hero-badge">
+            ✨ Find your perfect photographer
+        </div>
+
+        <h1>
+            Capture moments.
+            <span>Keep them forever.</span>
+        </h1>
+
+        <p>
+            Discover talented photographers, explore their work,
+            and book the right professional for your next
+            unforgettable moment.
+        </p>
+
+        <div class="hero-actions">
+
+            <a
+                href="{% url 'login' %}"
+                class="button button-primary"
+            >
+                🔍 Find a Photographer
+            </a>
+
+            <a
+                href="{% url 'register' %}"
+                class="button button-secondary"
+            >
+                Become a Photographer
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Decorative photography visual -->
+
+    <div class="hero-visual">
+
+        <div class="music-disc">
+
+            <div class="disc-center">
+                📷
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================
+     FEATURED PHOTOGRAPHERS
+===================================== -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2 class="section-title">
+                Featured Photographers
+            </h2>
+
+            <p class="section-subtitle">
+                Discover talented photographers ready to
+                capture your special moments.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="grid">
+
+        {% for photographer in photographers %}
+
+            <article class="card music-card">
+
+                <!-- Photographer cover -->
+
+                <div class="music-cover">
+
+                    {% if photographer.profile.avatar %}
+
+                        <img
+                            src="{{ photographer.profile.avatar.url }}"
+                            alt="{{ photographer.get_full_name|default:photographer.username }}"
+                            style="
+                                width:100%;
+                                height:100%;
+                                object-fit:cover;
+                            "
+                        >
+
+                    {% else %}
+
+                        📷
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="music-info">
+
+                    <h3 class="music-title">
+
+                        {{ photographer.get_full_name|default:photographer.username }}
+
+                    </h3>
+
+
+                    <p class="music-artist">
+
+                        {{ photographer.profile.bio|default:"Professional photographer" }}
+
+                    </p>
+
+
+                    <div style="margin-top:15px;">
+
+                        <a
+                            href="{% url 'login' %}"
+                            class="button button-secondary"
+                            style="width:100%;"
+                        >
+                            View Profile
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+
+        {% empty %}
+
+            <div class="card">
+
+                <div class="feature-icon">
+                    📷
+                </div>
+
+                <h3>
+                    Photographers are joining Pwmuziki
+                </h3>
+
+                <p>
+                    Our photographer community is growing.
+                    Check back soon to discover talented
+                    professionals near you.
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================
+     WHY PWMUZIKI
+===================================== -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2 class="section-title">
+                Why choose Pwmuziki?
+            </h2>
+
+            <p class="section-subtitle">
+                Everything you need to find and book
+                photography services with confidence.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="grid">
+
+
+        <!-- Feature 1 -->
+
+        <article class="card">
+
+            <div class="feature-icon">
+                🔎
+            </div>
+
+            <h3>
+                Discover Great Photographers
+            </h3>
+
+            <p>
+                Browse talented photographers and
+                explore their work before making
+                your decision.
+            </p>
+
+        </article>
+
+
+        <!-- Feature 2 -->
+
+        <article class="card">
+
+            <div class="feature-icon">
+                📅
+            </div>
+
+            <h3>
+                Easy Booking
+            </h3>
+
+            <p>
+                Find the right photographer and
+                request a booking without the
+                usual hassle.
+            </p>
+
+        </article>
+
+
+        <!-- Feature 3 -->
+
+        <article class="card">
+
+            <div class="feature-icon">
+                🛡️
+            </div>
+
+            <h3>
+                Book With Confidence
+            </h3>
+
+            <p>
+                View photographer profiles and
+                their information before choosing
+                who will capture your moments.
+            </p>
+
+        </article>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================
+     PHOTOGRAPHER CTA
+===================================== -->
+
+<section
+    class="card"
+    style="
+        text-align:center;
+        padding:60px 30px;
+        margin-top:20px;
+        margin-bottom:20px;
+        background:
+            radial-gradient(
+                circle at 50% 0%,
+                rgba(124,58,237,0.25),
+                transparent 55%
+            ),
+            #11141c;
+    "
+>
+
+    <div
+        style="
+            font-size:45px;
+            margin-bottom:15px;
+        "
+    >
+        📸
+    </div>
+
+
+    <h2
+        style="
+            font-size:32px;
+            margin-bottom:12px;
+        "
+    >
+        Are you a photographer?
+    </h2>
+
+
+    <p
+        style="
+            max-width:600px;
+            margin:0 auto 25px;
+            color:#9ca3af;
+        "
+    >
+        Showcase your work, connect with new clients,
+        and grow your photography business through
+        Pwmuziki.
+    </p>
+
+
+    <a
+        href="{% url 'register' %}"
+        class="button button-primary"
+    >
+        Join Pwmuziki
+    </a>
+
+</section>
+
+
+{% endblock %}
