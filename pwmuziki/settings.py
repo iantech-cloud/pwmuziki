@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-*s2lds+k(6@z)1_5sa%7&5zr(_y@l)ta&b3zsdvpqp5$illopz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['pwmuziki.vercel.app']
 
 
 # Application definition
