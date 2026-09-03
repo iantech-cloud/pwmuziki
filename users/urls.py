@@ -8,6 +8,8 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('register/', views.register, name='register'),
+    path('register/client/', views.register_client, name='register_client'),
+    path('register/photographer/', views.register_photographer, name='register_photographer'),
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('password-reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html'), name='password_reset'),

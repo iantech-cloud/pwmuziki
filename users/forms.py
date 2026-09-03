@@ -4,10 +4,33 @@ from .models import Profile, User
 
 class RegistrationForm(UserCreationForm):
     email = forms.EmailField()
-    role = forms.ChoiceField(choices=User.Role.choices)
+    role = forms.ChoiceField(
+        required=True,
+        choices=(
+            ('', 'Choose how you’ll use Pwmuziki'),
+            (User.Role.CLIENT, 'I’m booking a photographer'),
+            (User.Role.PHOTOGRAPHER, 'I’m sharing my photography'),
+        ),
+        widget=forms.Select,
+    )
     class Meta:
         model = User
         fields = ('username', 'email', 'role', 'first_name', 'last_name', 'password1', 'password2')
+
+    def __init__(self, *args, initial_role=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        autocomplete = {
+            'username': 'username',
+            'email': 'email',
+            'first_name': 'given-name',
+            'last_name': 'family-name',
+            'password1': 'new-password',
+            'password2': 'new-password',
+        }
+        for name, value in autocomplete.items():
+            self.fields[name].widget.attrs['autocomplete'] = value
+        if initial_role in User.Role.values:
+            self.fields['role'].initial = initial_role
 
 
 class ProfileForm(forms.ModelForm):

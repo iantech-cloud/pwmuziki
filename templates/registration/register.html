@@ -22,29 +22,37 @@
             </svg>
         </div>
 
-        <h1 class="auth-title">
-            Create your account
-        </h1>
+        <h1 class="auth-title">{% if selected_role == 'photographer' %}Share your<br><em>point of view.</em>{% elif selected_role == 'client' %}Find your<br><em>photographer.</em>{% else %}Create your<br><em>account.</em>{% endif %}</h1>
 
         <p class="auth-subtitle">
-            Join Pwmuziki to book or offer photography services.
+            {% if selected_role == 'photographer' %}Build a profile, share your work, and meet people looking for your eye.{% elif selected_role == 'client' %}Find the right photographer and keep every booking in one place.{% else %}Choose how you’ll use Pwmuziki so we can set up the right dashboard.{% endif %}
         </p>
 
         <form method="post" class="auth-form">
 
             {% csrf_token %}
 
-            {{ form.as_p }}
+            {% for field in form %}
+                {% if field.name == 'role' %}
+                    <fieldset class="role-picker">
+                        <legend>{{ field.label }}</legend>
+                        {{ field }}
+                        {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                    </fieldset>
+                {% else %}
+                    <div class="auth-field">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}{% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}</div>
+                {% endif %}
+            {% endfor %}
 
             <button class="button button-primary auth-submit" type="submit">
-                Create account
+                {% if selected_role %}Join us as a {% if selected_role == 'photographer' %}photographer{% else %}client{% endif %}{% else %}Join us{% endif %}
             </button>
 
         </form>
 
         <p class="auth-footer-link">
-            Already registered?
-            <a href="{% url 'login' %}">Log in</a>
+            Already registered? <a href="{% url 'login' %}">Log in</a>
+            <span class="auth-switch">Or <a href="{% url 'register_client' %}">join as a client</a> · <a href="{% url 'register_photographer' %}">photographer</a></span>
         </p>
 
     </div>

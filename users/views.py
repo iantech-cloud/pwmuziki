@@ -1,7 +1,9 @@
+from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Avg, Prefetch
+from django.utils import timezone
 from reviews.models import Review
 from .forms import ProfileForm, RegistrationForm
 from .models import Profile, User
@@ -9,11 +11,36 @@ from portfolio.models import Album, Photo
 
 
 def register(request):
-    form = RegistrationForm(request.POST or None)
+    return _register(request)
+
+
+def register_as(request, role):
+    if role not in User.Role.values:
+        from django.http import Http404
+        raise Http404
+    return _register(request, role)
+
+
+def register_client(request):
+    return register_as(request, User.Role.CLIENT)
+
+
+def register_photographer(request):
+    return register_as(request, User.Role.PHOTOGRAPHER)
+
+
+def _register(request, initial_role=None):
+    form = RegistrationForm(request.POST or None, initial_role=initial_role)
     if request.method == 'POST' and form.is_valid():
-        form.save()
-        return redirect('login')
-    return render(request, 'registration/register.html', {'form': form})
+        user = form.save()
+        login(request, user)
+        return redirect('dashboard')
+    role = form['role'].value()
+    return render(request, 'registration/register.html', {
+        'form': form,
+        'selected_role': role,
+        'selected_role_label': dict(User.Role.choices).get(role),
+    })
 
 def home(request):
     photographers = (
@@ -55,10 +82,22 @@ def photographer_detail(request, pk):
 
 @login_required
 def dashboard(request):
-    bookings = request.user.client_bookings.all() if request.user.role == User.Role.CLIENT else request.user.photographer_bookings.all()
+    bookings = (
+        request.user.client_bookings.all()
+        if request.user.role == User.Role.CLIENT
+        else request.user.photographer_bookings.all()
+    ).select_related('client', 'photographer')
     context = {'bookings': bookings[:8], 'profile': Profile.ensure_for(request.user)}
+    today = timezone.localdate()
+    context['upcoming_count'] = bookings.filter(event_date__gte=today).exclude(status='cancelled').count()
     if request.user.role == User.Role.PHOTOGRAPHER:
         context['portfolio_albums'] = Album.objects.filter(photographer=request.user).prefetch_related('photos').order_by('-created_at')
+        context['pending_count'] = bookings.filter(status='pending').count()
+        context['confirmed_count'] = bookings.filter(status='confirmed').count()
+        context['published_count'] = Album.objects.filter(photographer=request.user, is_public=True).count()
+    else:
+        context['awaiting_count'] = bookings.filter(status='pending').count()
+        context['balance_due'] = sum((booking.balance for booking in bookings.exclude(status='cancelled')), 0)
     return render(request, 'dashboard.html', context)
 
 

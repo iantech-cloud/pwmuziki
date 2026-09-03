@@ -1,55 +1,44 @@
 {% extends 'base.html' %}
-{% block title %}Your studio | Pwmuziki{% endblock %}
+{% block title %}{% if request.user.role == 'photographer' %}Your studio{% else %}Your bookings{% endif %} | Pwmuziki{% endblock %}
 
 {% block content %}
 <section class="dashboard-intro">
     <div>
-        <p class="eyebrow">Your studio</p>
-        <h1>Good to see you,<br><em>{{ profile.display_name }}.</em></h1>
+        <p class="eyebrow">{% if request.user.role == 'photographer' %}Your studio{% else %}Your Pwmuziki{% endif %}</p>
+        <h1>{% if request.user.role == 'photographer' %}Good to see you,<br><em>{{ profile.display_name }}.</em>{% else %}Make room for<br><em>what matters.</em>{% endif %}</h1>
+        <p class="dashboard-lede">{% if request.user.role == 'photographer' %}Keep your work visible, your calendar clear, and your next story close.{% else %}Find the right eye, make a plan, and keep every detail in one place.{% endif %}</p>
     </div>
-    <a href="{% url 'booking_list' %}" class="button button-primary">View bookings <span aria-hidden="true">→</span></a>
+    {% if request.user.role == 'photographer' %}<a href="{% url 'portfolio_manage' %}" class="button button-primary">Manage your work <span aria-hidden="true">→</span></a>{% else %}<a href="{% url 'home' %}#photographers" class="button button-primary">Find a photographer <span aria-hidden="true">→</span></a>{% endif %}
 </section>
 
 <section class="dashboard-overview">
-    <div class="overview-card overview-card-dark">
-        <span class="overview-label">Bookings in your orbit</span>
-        <strong>{{ bookings|length }}</strong>
-        <span class="overview-foot">Latest activity</span>
-    </div>
-    <div class="overview-card">
-        <span class="overview-label">Profile</span>
-        <strong>{% if profile.bio %}Ready{% else %}Draft{% endif %}</strong>
-        <span class="overview-foot">{% if profile.bio %}Looking good{% else %}Add your story{% endif %}</span>
-    </div>
-    <div class="overview-card">
-        <span class="overview-label">Account</span>
-        <strong>Active</strong>
-        <span class="overview-foot">All systems go</span>
-    </div>
+    {% if request.user.role == 'photographer' %}
+    <div class="overview-card overview-card-dark"><span class="overview-label">Upcoming shoots</span><strong>{{ upcoming_count }}</strong><span class="overview-foot">Keep the story moving</span></div>
+    <div class="overview-card"><span class="overview-label">Requests to answer</span><strong>{{ pending_count }}</strong><span class="overview-foot">Waiting for your reply</span></div>
+    <div class="overview-card"><span class="overview-label">Published albums</span><strong>{{ published_count }}</strong><span class="overview-foot">{% if profile.is_featured %}Featured in the directory{% else %}Visible on your profile{% endif %}</span></div>
+    {% else %}
+    <div class="overview-card overview-card-dark"><span class="overview-label">Upcoming plans</span><strong>{{ upcoming_count }}</strong><span class="overview-foot">Moments on your calendar</span></div>
+    <div class="overview-card"><span class="overview-label">Awaiting replies</span><strong>{{ awaiting_count }}</strong><span class="overview-foot">Photographers to hear from</span></div>
+    <div class="overview-card"><span class="overview-label">Balance due</span><strong>KES {{ balance_due|floatformat:0 }}</strong><span class="overview-foot">Across active bookings</span></div>
+    {% endif %}
 </section>
 
 <section class="dashboard-profile">
-    <div class="profile-image">
-        {% if profile.avatar %}
-            <img src="{{ profile.avatar.url }}" alt="{{ profile.display_name }}">
-        {% else %}
-            <span>{{ profile.display_name|slice:":1"|upper }}</span>
-        {% endif %}
-    </div>
+    <div class="profile-image">{% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="{{ profile.display_name }}">{% else %}<span>{{ profile.display_name|slice:":1"|upper }}</span>{% endif %}</div>
     <div class="profile-copy">
-        <p class="eyebrow">Your public profile</p>
+        <p class="eyebrow">{% if request.user.role == 'photographer' %}Your public profile{% else %}Your account{% endif %}</p>
         <h2>{{ profile.display_name }}</h2>
-        <p>{{ profile.bio|default:"A little about you goes a long way. Tell people what you love to photograph, or what kind of moments you’re looking to make." }}</p>
+        <p>{{ profile.bio|default:"A little about you goes a long way. Add a short introduction so people know who they’re working with." }}</p>
         <div class="profile-actions">
             <a href="{% url 'profile_edit' %}" class="button button-secondary">Edit profile <span aria-hidden="true">↗</span></a>
-            {% if request.user.role == 'photographer' %}<a href="{% url 'photographer_detail' request.user.pk %}" class="text-link">View public page <span aria-hidden="true">→</span></a><a href="{% url 'portfolio_manage' %}" class="text-link">Manage portfolio <span aria-hidden="true">→</span></a>{% endif %}
+            {% if request.user.role == 'photographer' %}<a href="{% url 'photographer_detail' request.user.pk %}" class="text-link">View public page <span aria-hidden="true">→</span></a>{% endif %}
         </div>
     </div>
 </section>
 
 <section class="section dashboard-bookings">
     <div class="section-heading compact">
-        <div><p class="eyebrow">Keep an eye on</p><h2>Recent bookings</h2></div>
+        <div><p class="eyebrow">{% if request.user.role == 'photographer' %}Your work in motion{% else %}Keep an eye on{% endif %}</p><h2>{% if request.user.role == 'photographer' %}Booking requests{% else %}Recent bookings{% endif %}</h2></div>
         <a href="{% url 'booking_list' %}" class="text-link">View all <span aria-hidden="true">→</span></a>
     </div>
     <div class="booking-list">
@@ -61,23 +50,18 @@
             <span class="row-arrow" aria-hidden="true">→</span>
         </a>
         {% empty %}
-        <div class="empty-state">
-            <span class="empty-stamp">P</span>
-            <h3>Nothing on the calendar yet.</h3>
-            <p>Your next story starts with finding the right person to photograph it.</p>
-            <a href="{% url 'home' %}" class="button button-primary">Explore photographers <span aria-hidden="true">↘</span></a>
-        </div>
+        <div class="empty-state"><span class="empty-stamp">P</span><h3>{% if request.user.role == 'photographer' %}Your next request is waiting.{% else %}Nothing on the calendar yet.{% endif %}</h3><p>{% if request.user.role == 'photographer' %}Make your profile yours and let the right people find you.{% else %}When you find the right fit, your plans will live here.{% endif %}</p>{% if request.user.role == 'photographer' %}<a href="{% url 'portfolio_manage' %}" class="button button-primary">Curate your portfolio <span aria-hidden="true">↗</span></a>{% else %}<a href="{% url 'home' %}#photographers" class="button button-primary">Explore photographers <span aria-hidden="true">↘</span></a>{% endif %}</div>
         {% endfor %}
     </div>
 </section>
+
 {% if request.user.role == 'photographer' %}
 <section class="section dashboard-portfolio">
     <div class="section-heading compact"><div><p class="eyebrow">Show your point of view</p><h2>Your portfolio</h2></div><a href="{% url 'portfolio_manage' %}" class="text-link">Manage portfolio <span aria-hidden="true">→</span></a></div>
     <div class="dashboard-portfolio-grid">{% for album in portfolio_albums|slice:":3" %}<a class="dashboard-album" href="{% if album.is_public %}{% url 'album_detail' album.pk %}{% else %}{% url 'portfolio_manage' %}{% endif %}"><div>{% with cover=album.photos.all.0 %}{% if cover %}<img src="{{ cover.image.url }}" alt="{{ cover.caption|default:album.title }}">{% else %}<span class="album-placeholder">P</span>{% endif %}{% endwith %}</div><strong>{{ album.title }}</strong><small>{% if album.is_public %}Visible on your public profile{% else %}Hidden from public view{% endif %}</small></a>{% empty %}<div class="dashboard-portfolio-empty"><p>Give visitors a first look at your work.</p><a href="{% url 'album_create' %}" class="button button-secondary">Create an album <span aria-hidden="true">↗</span></a></div>{% endfor %}</div>
 </section>
-<section class="dashboard-tool-links">
-    <a href="{% url 'availability_manage' %}"><span>01</span><strong>Set availability</strong><small>Keep your calendar clear</small><b>→</b></a>
-    <a href="{% url 'portfolio_manage' %}"><span>02</span><strong>Curate your portfolio</strong><small>Show the work you’re proud of</small><b>→</b></a>
-</section>
+<section class="dashboard-tool-links"><a href="{% url 'availability_manage' %}"><span>01</span><strong>Set availability</strong><small>Keep your calendar clear</small><b>→</b></a><a href="{% url 'portfolio_manage' %}"><span>02</span><strong>Curate your portfolio</strong><small>Show the work you’re proud of</small><b>→</b></a><a href="{% url 'booking_list' %}"><span>03</span><strong>Answer requests</strong><small>Keep clients in the loop</small><b>→</b></a></section>
+{% else %}
+<section class="dashboard-tool-links client-tool-links"><a href="{% url 'home' %}#photographers"><span>01</span><strong>Browse photographers</strong><small>Start with the work</small><b>→</b></a><a href="{% url 'booking_create' %}"><span>02</span><strong>Request a booking</strong><small>Turn an idea into a plan</small><b>→</b></a><a href="{% url 'booking_list' %}"><span>03</span><strong>Review your plans</strong><small>Bookings, payments, and reviews</small><b>→</b></a></section>
 {% endif %}
 {% endblock %}

@@ -32,7 +32,8 @@
 
             {% csrf_token %}
 
-            {{ form.as_p }}
+            <div class="auth-field">{{ form.username.label_tag }}{{ form.username }}</div>
+            <div class="auth-field">{{ form.password.label_tag }}{{ form.password }}</div>
 
             <button class="button button-primary auth-submit" type="submit">
                 Log in

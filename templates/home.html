@@ -9,8 +9,9 @@
         <p class="hero-lede">From loud celebrations to the quiet in-between, discover photographers who know how to make a moment feel like yours.</p>
         <div class="hero-actions">
             <a href="#photographers" class="button button-primary">Explore photographers <span aria-hidden="true">↘</span></a>
-            <a href="{% url 'register' %}" class="text-link">Share your work <span aria-hidden="true">→</span></a>
+            <a href="{% url 'register_photographer' %}" class="text-link">Share your work <span aria-hidden="true">→</span></a>
         </div>
+        <div class="hero-role-links"><span>Looking for a photographer?</span><a href="{% url 'register_client' %}" class="text-link">Join us to book <span aria-hidden="true">→</span></a></div>
         <div class="hero-caption"><span class="caption-dot"></span> Nairobi and beyond</div>
     </div>
     <div class="hero-image-wrap">
@@ -58,9 +59,9 @@
         {% empty %}
         <div class="empty-directory">
             <p class="eyebrow">The first roll is waiting</p>
-            <h3>Photographers are joining the community.</h3>
+            <h3>Photographers are joining us.</h3>
             <p>Be one of the first to share the work you’re proud of.</p>
-            <a href="{% url 'register' %}" class="button button-secondary">Join as a photographer <span aria-hidden="true">→</span></a>
+            <a href="{% url 'register_photographer' %}" class="button button-secondary">Join us as a photographer <span aria-hidden="true">→</span></a>
         </div>
         {% endfor %}
     </div>
@@ -82,7 +83,7 @@
     </div>
     <div class="cta-band-action">
         <p>Put your perspective in front of people looking for something real.</p>
-        <a href="{% url 'register' %}" class="button button-primary">Create your profile <span aria-hidden="true">↗</span></a>
+        <a href="{% url 'register_photographer' %}" class="button button-primary">Join us <span aria-hidden="true">↗</span></a>
     </div>
 </section>
 {% endblock %}

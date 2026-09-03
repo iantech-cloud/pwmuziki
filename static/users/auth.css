@@ -12,6 +12,11 @@
 .auth-form input:focus, .auth-form select:focus, .auth-form textarea:focus { border-color: var(--rust); }
 .auth-form .helptext { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.4; }
 .auth-form ul.errorlist { margin: 0 0 6px; padding: 0; list-style: none; color: var(--rust-dark); font-size: 12px; }
+.role-picker { margin: 0 0 19px; padding: 0; border: 0; }
+.role-picker legend { margin-bottom: 9px; color: var(--muted); font: 10px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.role-picker select { width: 100%; }
+.auth-field { margin-bottom: 17px; }
+.auth-switch { display: block; margin-top: 9px; font-size: 11px; }
 .auth-submit { width: 100%; margin-top: 7px; }
 .auth-footer-link, .auth-footer-links { margin-top: 22px; color: var(--muted); font-size: 13px; }
 .auth-footer-link a, .auth-footer-links a { color: var(--rust-dark); font-weight: 600; }
