@@ -71,6 +71,10 @@
     </div>
 </section>
 {% if request.user.role == 'photographer' %}
+<section class="section dashboard-portfolio">
+    <div class="section-heading compact"><div><p class="eyebrow">Show your point of view</p><h2>Your portfolio</h2></div><a href="{% url 'portfolio_manage' %}" class="text-link">Manage portfolio <span aria-hidden="true">→</span></a></div>
+    <div class="dashboard-portfolio-grid">{% for album in portfolio_albums|slice:":3" %}<a class="dashboard-album" href="{% if album.is_public %}{% url 'album_detail' album.pk %}{% else %}{% url 'portfolio_manage' %}{% endif %}"><div>{% with cover=album.photos.all.0 %}{% if cover %}<img src="{{ cover.image.url }}" alt="{{ cover.caption|default:album.title }}">{% else %}<span class="album-placeholder">P</span>{% endif %}{% endwith %}</div><strong>{{ album.title }}</strong><small>{% if album.is_public %}Visible on your public profile{% else %}Hidden from public view{% endif %}</small></a>{% empty %}<div class="dashboard-portfolio-empty"><p>Give visitors a first look at your work.</p><a href="{% url 'album_create' %}" class="button button-secondary">Create an album <span aria-hidden="true">↗</span></a></div>{% endfor %}</div>
+</section>
 <section class="dashboard-tool-links">
     <a href="{% url 'availability_manage' %}"><span>01</span><strong>Set availability</strong><small>Keep your calendar clear</small><b>→</b></a>
     <a href="{% url 'portfolio_manage' %}"><span>02</span><strong>Curate your portfolio</strong><small>Show the work you’re proud of</small><b>→</b></a>

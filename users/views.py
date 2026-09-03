@@ -22,10 +22,13 @@ def home(request):
         .prefetch_related(
             Prefetch(
                 'albums',
-                queryset=Album.objects.filter(is_public=True).prefetch_related('photos'),
+                queryset=Album.objects.filter(is_public=True).prefetch_related(
+                    Prefetch('photos', queryset=Photo.objects.order_by('-uploaded_at'))
+                ),
                 to_attr='public_albums',
             )
         )
+        .order_by('-profile__is_featured', '-date_joined')
     )
     return render(request, 'home.html', {'photographers': photographers})
 
@@ -53,7 +56,10 @@ def photographer_detail(request, pk):
 @login_required
 def dashboard(request):
     bookings = request.user.client_bookings.all() if request.user.role == User.Role.CLIENT else request.user.photographer_bookings.all()
-    return render(request, 'dashboard.html', {'bookings': bookings[:8], 'profile': Profile.ensure_for(request.user)})
+    context = {'bookings': bookings[:8], 'profile': Profile.ensure_for(request.user)}
+    if request.user.role == User.Role.PHOTOGRAPHER:
+        context['portfolio_albums'] = Album.objects.filter(photographer=request.user).prefetch_related('photos').order_by('-created_at')
+    return render(request, 'dashboard.html', context)
 
 
 @login_required

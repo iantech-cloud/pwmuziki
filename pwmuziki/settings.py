@@ -131,13 +131,27 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox').lower()
 MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', '')
 MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', '')
 MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '')
 MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', '')
 MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', '')
-MPESA_AUTH_URL = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
-MPESA_STK_URL = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
+MPESA_AUTH_URL = os.environ.get(
+    'MPESA_AUTH_URL',
+    'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+    if MPESA_ENVIRONMENT == 'production'
+    else 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+)
+MPESA_STK_URL = os.environ.get(
+    'MPESA_STK_URL',
+    'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
+    if MPESA_ENVIRONMENT == 'production'
+    else 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+)
+MPESA_TRANSACTION_TYPE = os.environ.get('MPESA_TRANSACTION_TYPE', 'CustomerPayBillOnline')
+MPESA_PARTY_B = os.environ.get('MPESA_PARTY_B', MPESA_SHORTCODE)
+MPESA_ACCOUNT_REFERENCE = os.environ.get('MPESA_ACCOUNT_REFERENCE', 'Pwmuziki')
 
 
 # Email

@@ -43,12 +43,9 @@
         {% for photographer in photographers %}
         <article class="photographer-card">
             <a href="{% url 'photographer_detail' photographer.pk %}" class="photographer-cover">
-                {% if photographer.profile.avatar %}
-                    <img src="{{ photographer.profile.avatar.url }}" alt="{{ photographer.profile.display_name }}">
-                {% else %}
-                    <div class="cover-placeholder cover-{{ forloop.counter|divisibleby:4|yesno:'warm,light' }}" aria-hidden="true"></div>
-                {% endif %}
+                {% with album=photographer.public_albums.0 %}{% with photo=album.photos.all.0 %}{% if photo %}<img src="{{ photo.image.url }}" alt="{{ photo.caption|default:album.title }}">{% elif photographer.profile.avatar %}<img src="{{ photographer.profile.avatar.url }}" alt="{{ photographer.profile.display_name }}">{% else %}<div class="cover-placeholder cover-{{ forloop.counter|divisibleby:4|yesno:'warm,light' }}" aria-hidden="true"></div>{% endif %}{% endwith %}{% endwith %}
                 <span class="cover-arrow" aria-hidden="true">↗</span>
+                {% if photographer.profile.is_featured %}<span class="featured-label">Featured</span>{% endif %}
             </a>
             <div class="photographer-meta">
                 <div>

@@ -95,7 +95,7 @@ def mpesa_callback(request):
         return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback acknowledged'})
 
     transaction.raw_response = payload
-    if callback.get('ResultCode') == 0:
+    if str(callback.get('ResultCode')) == '0':
         transaction.status = Transaction.Status.SUCCESS
         transaction.invoice.is_paid = True
         transaction.invoice.save(update_fields=['is_paid'])

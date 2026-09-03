@@ -91,6 +91,7 @@ h3 { font-size: 19px; }
 .photographer-cover { position: relative; display: block; height: 390px; overflow: hidden; background: var(--paper-deep); }
 .photographer-cover img, .cover-placeholder { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
 .photographer-cover:hover img, .photographer-cover:hover .cover-placeholder { transform: scale(1.04); }
+.featured-label { position: absolute; left: 13px; bottom: 13px; padding: 7px 9px; background: var(--white); color: var(--rust); font: 9px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
 .cover-placeholder { background-position: center; background-size: cover; filter: saturate(.8); }
 .cover-warm { background-image: linear-gradient(150deg, rgba(65, 35, 22, .1), rgba(174, 89, 48, .25)), url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=700&q=80'); }
 .cover-light { background-image: linear-gradient(150deg, rgba(44, 55, 48, .05), rgba(160, 142, 111, .2)), url('https://images.unsplash.com/photo-1507504031003-b417219a0fde?auto=format&fit=crop&w=700&q=80'); }
@@ -155,6 +156,18 @@ h3 { font-size: 19px; }
 .empty-state h2, .empty-state h3 { margin-bottom: 9px; font-family: var(--display); }
 .empty-state p { max-width: 390px; margin: 0 auto 23px; color: var(--muted); font-size: 13px; }
 .dashboard-tool-links { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 58px; }
+.dashboard-portfolio { margin-top: 58px; }
+.dashboard-portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.dashboard-album { color: var(--ink); }
+.dashboard-album > div { aspect-ratio: 4 / 3; overflow: hidden; background: var(--paper-deep); }
+.dashboard-album img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
+.dashboard-album:hover img { transform: scale(1.04); }
+.dashboard-album strong, .dashboard-album small { display: block; }
+.dashboard-album strong { margin-top: 12px; font: 22px var(--display); }
+.dashboard-album small { margin-top: 4px; color: var(--muted); font-size: 11px; }
+.album-placeholder { display: grid; width: 100%; height: 100%; place-items: center; color: var(--rust); font: 42px var(--display); }
+.dashboard-portfolio-empty { padding: 32px; border: 1px dashed var(--line); }
+.dashboard-portfolio-empty p { margin-bottom: 17px; color: var(--muted); }
 .dashboard-tool-links a { display: grid; grid-template-columns: 35px 1fr 20px; grid-template-rows: auto auto; column-gap: 12px; padding: 22px; border: 1px solid var(--line); background: var(--white); transition: border-color .2s ease, transform .2s ease; }
 .dashboard-tool-links a:hover { border-color: var(--rust); transform: translateY(-2px); }
 .dashboard-tool-links span { grid-row: 1 / 3; color: var(--rust); font: 11px var(--mono); }
@@ -305,6 +318,7 @@ h3 { font-size: 19px; }
     .overview-card:first-child { grid-column: 1 / -1; }
     .dashboard-profile { grid-template-columns: 100px 1fr; gap: 22px; padding: 22px; }
     .dashboard-tool-links { grid-template-columns: 1fr; }
+    .dashboard-portfolio-grid { grid-template-columns: 1fr; }
     .profile-image { width: 100px; height: 100px; }
     .profile-image span { font-size: 55px; }
     .profile-copy h2 { font-size: 28px; }

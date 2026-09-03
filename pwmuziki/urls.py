@@ -28,5 +28,9 @@ urlpatterns = [
     path('reviews/', include('reviews.urls')),
 ]
 
+admin.site.site_header = 'Pwmuziki administration'
+admin.site.site_title = 'Pwmuziki admin'
+admin.site.index_title = 'Operations dashboard'
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

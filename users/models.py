@@ -15,6 +15,7 @@ class Profile(models.Model):
     portfolio_link = models.URLField(blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     phone_number = models.CharField(max_length=30, blank=True)
+    is_featured = models.BooleanField(default=False, help_text='Show this photographer in the featured directory.')
 
     def __str__(self):
         return f'{self.user.username} profile'
