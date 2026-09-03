@@ -1,0 +1,733 @@
+/* ==========================================
+   Pwmuziki — style.css
+   Base site styles
+========================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #0d0d10;
+    color: #f2f2f2;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* =========================
+   ICONS
+========================= */
+
+.icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.15em;
+    flex-shrink: 0;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    background: rgba(13, 13, 16, 0.96);
+    border-bottom: 1px solid #25252a;
+}
+
+.navbar {
+    max-width: 1200px;
+    margin: auto;
+    padding: 16px 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #6d3fc4;
+    color: #fff;
+}
+
+.logo-icon .icon {
+    width: 19px;
+    height: 19px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.nav-links a {
+    color: #b8b8bf;
+    font-size: 14px;
+
+    transition: color 0.15s ease;
+}
+
+.nav-links a:hover {
+    color: #ffffff;
+}
+
+.nav-join {
+    padding: 9px 16px;
+
+    border-radius: 7px;
+
+    background: #6d3fc4;
+    color: #fff !important;
+
+    font-weight: 600;
+}
+
+.nav-join:hover {
+    background: #7a49d2;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 45px 25px;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+    min-height: 540px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+
+    gap: 55px;
+    padding: 55px 0;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 6px 11px;
+    margin-bottom: 18px;
+
+    border: 1px solid #33333a;
+    border-radius: 6px;
+
+    background: #18181c;
+    color: #b9b9c1;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.hero-badge .icon {
+    width: 13px;
+    height: 13px;
+}
+
+.hero h1 {
+    max-width: 700px;
+
+    margin-bottom: 20px;
+
+    font-size: clamp(40px, 5.5vw, 68px);
+    line-height: 1.08;
+    letter-spacing: -1.5px;
+}
+
+.hero h1 span {
+    color: #9b6bdd;
+}
+
+.hero p {
+    max-width: 550px;
+
+    margin-bottom: 28px;
+
+    color: #a4a4ac;
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 11px 18px;
+
+    border-radius: 7px;
+
+    font-weight: 600;
+    font-size: 14px;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.button .icon {
+    width: 16px;
+    height: 16px;
+}
+
+.button-primary {
+    background: #6d3fc4;
+    color: #fff;
+}
+
+.button-primary:hover {
+    background: #7a49d2;
+    transform: translateY(-1px);
+}
+
+.button-secondary {
+    border: 1px solid #35353c;
+    background: #17171b;
+    color: #eeeeee;
+}
+
+.button-secondary:hover {
+    background: #202025;
+    border-color: #44444c;
+}
+
+/* =========================
+   HERO IMAGE
+========================= */
+
+.hero-visual {
+    position: relative;
+    height: 430px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-card {
+    width: 310px;
+    height: 380px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #34343a;
+    border-radius: 18px;
+
+    background: #18181d;
+
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+
+    transform: rotate(2deg);
+}
+
+.camera-card .icon {
+    width: 85px;
+    height: 85px;
+    color: #d5d5d9;
+}
+
+.camera-circle {
+    width: 160px;
+    height: 160px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #27212f;
+    border: 1px solid #40364d;
+}
+
+.camera-circle .icon {
+    width: 55px;
+    height: 55px;
+    color: #b994e8;
+}
+
+/* =========================
+   MUSIC DISC
+========================= */
+
+.music-disc {
+    width: 290px;
+    height: 290px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #29202f;
+
+    border: 1px solid #45384f;
+
+    box-shadow: 0 25px 55px rgba(0, 0, 0, 0.4);
+}
+
+.disc-center {
+    width: 86px;
+    height: 86px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #0d0d10;
+    border: 1px solid #36363c;
+}
+
+.disc-center .icon {
+    width: 38px;
+    height: 38px;
+    color: #eeeeee;
+}
+
+/* =========================
+   SECTIONS
+========================= */
+
+.section {
+    padding: 65px 0;
+}
+
+.section-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.section-title {
+    font-size: 30px;
+    margin-bottom: 5px;
+}
+
+.section-subtitle {
+    color: #8e8e96;
+    font-size: 15px;
+}
+
+.section-link {
+    color: #a980d7;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.section-link:hover {
+    color: #c09be9;
+}
+
+/* =========================
+   GRID
+========================= */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(250px, 1fr)
+    );
+
+    gap: 18px;
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.card {
+    padding: 23px;
+
+    background: #17171b;
+    border: 1px solid #29292f;
+    border-radius: 11px;
+
+    transition:
+        border-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: #414149;
+}
+
+.card h3 {
+    margin-bottom: 8px;
+}
+
+.card p {
+    color: #9999a1;
+    font-size: 14px;
+}
+
+/* =========================
+   PHOTOGRAPHER / MUSIC CARDS
+========================= */
+
+.photographer-card,
+.music-card {
+    overflow: hidden;
+    padding: 0;
+}
+
+.photographer-image,
+.music-cover {
+    height: 230px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #202027;
+}
+
+.music-cover .icon {
+    width: 45px;
+    height: 45px;
+    color: #aaaab3;
+}
+
+.photographer-info,
+.music-info {
+    padding: 20px;
+}
+
+.photographer-info h3,
+.music-title {
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.photographer-info p,
+.music-artist {
+    color: #919198;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+/* =========================
+   FEATURES
+========================= */
+
+.feature-icon {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 16px;
+
+    border-radius: 9px;
+
+    background: #24202b;
+    color: #b995e3;
+}
+
+.feature-icon .icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* =========================
+   CTA
+========================= */
+
+.cta {
+    margin: 55px 0;
+
+    padding: 50px 30px;
+
+    text-align: center;
+
+    border: 1px solid #353039;
+    border-radius: 14px;
+
+    background: #19171d;
+}
+
+.cta h2 {
+    font-size: 34px;
+    margin-bottom: 10px;
+}
+
+.cta p {
+    max-width: 600px;
+
+    margin: 0 auto 23px;
+
+    color: #a1a1a8;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.site-footer {
+    border-top: 1px solid #25252a;
+    background: #09090b;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: auto;
+
+    padding: 42px 25px;
+
+    display: flex;
+    justify-content: space-between;
+
+    gap: 40px;
+}
+
+.footer-brand {
+    max-width: 350px;
+}
+
+.footer-brand p {
+    margin-top: 10px;
+    color: #77777f;
+    font-size: 14px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: #85858d;
+    font-size: 14px;
+}
+
+.footer-links a:hover {
+    color: #ffffff;
+}
+
+.copyright {
+    border-top: 1px solid #1c1c21;
+
+    padding: 18px 25px;
+
+    text-align: center;
+
+    color: #62626a;
+    font-size: 12px;
+}
+
+/* =========================
+   MOBILE MENU
+========================= */
+
+.mobile-menu {
+    display: none;
+
+    padding: 0;
+
+    background: none;
+    border: none;
+
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.mobile-menu .icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 800px) {
+
+    .navbar {
+        padding: 14px 20px;
+    }
+
+    .mobile-menu {
+        display: block;
+    }
+
+    .nav-links {
+        display: none;
+
+        position: absolute;
+
+        left: 0;
+        right: 0;
+        top: 65px;
+
+        padding: 15px 20px;
+
+        background: #0d0d10;
+        border-bottom: 1px solid #25252a;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 5px;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .nav-links a {
+        padding: 10px;
+    }
+
+    .hero {
+        grid-template-columns: 1fr;
+        text-align: center;
+
+        padding-top: 25px;
+    }
+
+    .hero p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-actions {
+        justify-content: center;
+    }
+
+    .hero-visual {
+        height: 330px;
+    }
+
+    .camera-card {
+        width: 245px;
+        height: 300px;
+    }
+
+    .section-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .footer-content {
+        flex-direction: column;
+    }
+}
+
+
+/* ==========================================
+   Page-specific styles — photographers_home.html
+========================================== */
+
+.cta-photographer-icon .icon {
+    width: 38px;
+    height: 38px;
+}
+
+.music-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.music-view-profile-wrap {
+    margin-top: 14px;
+}
+
+.button-full {
+    width: 100%;
+}
+
+.cta-photographer-section {
+    text-align: center;
+
+    padding: 50px 30px;
+
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    border: 1px solid #353039;
+    border-radius: 14px;
+
+    background: #19171d;
+}
+
+.cta-photographer-icon {
+    font-size: 42px;
+    margin-bottom: 13px;
+}
+
+.cta-photographer-title {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.cta-photographer-text {
+    max-width: 600px;
+
+    margin: 0 auto 23px;
+
+    color: #96969e;
+}

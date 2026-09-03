@@ -1,1 +1,56 @@
-{% extends 'base.html' %}{% block title %}Create account | Pwmuziki{% endblock %}{% block content %}<div class="card"><h1>Create your account</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button class="button" type="submit">Create account</button></form><p>Already registered? <a href="{% url 'login' %}">Log in</a></p></div>{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create account | Pwmuziki{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'users/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-icon">
+            <svg class="icon icon-user-plus" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+                <path d="M2 21c0-4 3.5-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="19" y1="8" x2="19" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="16" y1="11" x2="22" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <h1 class="auth-title">
+            Create your account
+        </h1>
+
+        <p class="auth-subtitle">
+            Join Pwmuziki to book or offer photography services.
+        </p>
+
+        <form method="post" class="auth-form">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button class="button button-primary auth-submit" type="submit">
+                Create account
+            </button>
+
+        </form>
+
+        <p class="auth-footer-link">
+            Already registered?
+            <a href="{% url 'login' %}">
+                Log in
+            </a>
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}

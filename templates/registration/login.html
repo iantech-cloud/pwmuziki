@@ -1,1 +1,53 @@
-{% extends 'base.html' %}{% block title %}Log in | Pwmuziki{% endblock %}{% block content %}<div class="card"><h1>Log in</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button class="button" type="submit">Log in</button></form><p><a href="{% url 'password_reset' %}">Forgot your password?</a></p></div>{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Log in | Pwmuziki{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'users/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-icon">
+            <svg class="icon icon-lock" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <h1 class="auth-title">
+            Log in
+        </h1>
+
+        <p class="auth-subtitle">
+            Welcome back to Pwmuziki.
+        </p>
+
+        <form method="post" class="auth-form">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button class="button button-primary auth-submit" type="submit">
+                Log in
+            </button>
+
+        </form>
+
+        <p class="auth-footer-link">
+            <a href="{% url 'password_reset' %}">
+                Forgot your password?
+            </a>
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}
