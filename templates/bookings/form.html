@@ -2,7 +2,7 @@
 {% block title %}Request a booking | Pwmuziki{% endblock %}
 {% block content %}
 <section class="form-layout">
-    <div class="form-intro"><p class="eyebrow">Make a plan</p><h1>Start with<br><em>the feeling.</em></h1><p>Tell us what you’re imagining. The photographer can work out the details with you from there.</p></div>
+    <div class="form-intro"><p class="eyebrow">{% if booking %}Adjust the plan{% else %}Make a plan{% endif %}</p><h1>{% if booking %}Keep it<br><em>feeling right.</em>{% else %}Start with<br><em>the feeling.</em>{% endif %}</h1><p>Tell us what you’re imagining. The photographer can work out the details with you from there.</p></div>
     <div class="form-card">
         <form method="post" class="site-form">
             {% csrf_token %}
@@ -14,7 +14,7 @@
                     {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
                 </div>
             {% endfor %}
-            <button class="button button-primary" type="submit">Send booking request <span aria-hidden="true">↗</span></button>
+            <button class="button button-primary" type="submit">{% if booking %}Save changes{% else %}Send booking request{% endif %} <span aria-hidden="true">↗</span></button>
         </form>
     </div>
 </section>

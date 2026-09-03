@@ -12,6 +12,7 @@
 .auth-form .helptext { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.4; }
 .auth-form ul.errorlist { margin: 0 0 6px; padding: 0; list-style: none; color: var(--rust-dark); font-size: 12px; }
 .auth-submit { width: 100%; margin-top: 7px; }
-.auth-footer-link { margin-top: 22px; color: var(--muted); font-size: 13px; }
-.auth-footer-link a { color: var(--rust-dark); font-weight: 600; }
+.auth-footer-link, .auth-footer-links { margin-top: 22px; color: var(--muted); font-size: 13px; }
+.auth-footer-link a, .auth-footer-links a { color: var(--rust-dark); font-weight: 600; }
+.auth-footer-links { display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
 @media (max-width: 700px) { .auth-page { grid-template-columns: 1fr; min-height: auto; gap: 35px; margin-top: 30px; } .auth-page::before { padding: 32px 25px; font-size: 35px; } .auth-title { font-size: 43px; } }

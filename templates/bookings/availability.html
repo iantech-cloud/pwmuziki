@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Availability | Pwmuziki{% endblock %}
+{% block content %}
+<section class="page-heading"><div><p class="eyebrow">Your calendar</p><h1>Availability</h1><p class="page-lede">Give clients a clear view of the days you can show up.</p></div><a href="{% url 'dashboard' %}" class="text-link">← Back to dashboard</a></section>
+<div class="availability-layout">
+    <div class="form-card"><p class="eyebrow">Add a date</p><form method="post" class="site-form">{% csrf_token %}{% for field in form %}<div class="form-field">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}<button class="button button-primary" type="submit">Save date <span aria-hidden="true">↗</span></button></form></div>
+    <div class="availability-list">{% for day in availability %}<div class="availability-row"><div><strong>{{ day.date|date:"j F Y" }}</strong><small>{{ day.notes|default:"No note added" }}</small></div><span class="status {% if day.is_available %}status-confirmed{% else %}status-cancelled{% endif %}">{% if day.is_available %}Available{% else %}Blocked{% endif %}</span><form method="post" action="{% url 'availability_toggle' day.pk %}">{% csrf_token %}<button class="text-link" type="submit">{% if day.is_available %}Block{% else %}Open{% endif %}</button></form></div>{% empty %}<div class="empty-state"><span class="empty-stamp">P</span><h2>Your calendar is open.</h2><p>Add dates above to communicate when you’re available.</p></div>{% endfor %}</div>
+</div>
+{% endblock %}

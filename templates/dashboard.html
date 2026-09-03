@@ -42,7 +42,7 @@
         <p>{{ profile.bio|default:"A little about you goes a long way. Tell people what you love to photograph, or what kind of moments you’re looking to make." }}</p>
         <div class="profile-actions">
             <a href="{% url 'profile_edit' %}" class="button button-secondary">Edit profile <span aria-hidden="true">↗</span></a>
-            {% if request.user.role == 'photographer' %}<a href="{% url 'photographer_detail' request.user.pk %}" class="text-link">View public page <span aria-hidden="true">→</span></a>{% endif %}
+            {% if request.user.role == 'photographer' %}<a href="{% url 'photographer_detail' request.user.pk %}" class="text-link">View public page <span aria-hidden="true">→</span></a><a href="{% url 'portfolio_manage' %}" class="text-link">Manage portfolio <span aria-hidden="true">→</span></a>{% endif %}
         </div>
     </div>
 </section>
@@ -70,4 +70,10 @@
         {% endfor %}
     </div>
 </section>
+{% if request.user.role == 'photographer' %}
+<section class="dashboard-tool-links">
+    <a href="{% url 'availability_manage' %}"><span>01</span><strong>Set availability</strong><small>Keep your calendar clear</small><b>→</b></a>
+    <a href="{% url 'portfolio_manage' %}"><span>02</span><strong>Curate your portfolio</strong><small>Show the work you’re proud of</small><b>→</b></a>
+</section>
+{% endif %}
 {% endblock %}

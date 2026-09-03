@@ -120,6 +120,7 @@ h3 { font-size: 19px; }
 .dashboard-intro h1 { font-size: clamp(44px, 6vw, 74px); }
 .page-heading h1 { font-size: clamp(47px, 6vw, 72px); }
 .page-lede { margin-top: 14px; color: var(--muted); font-size: 15px; }
+.heading-actions { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
 .dashboard-overview { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 15px; margin-bottom: 62px; }
 .overview-card { min-height: 155px; padding: 23px; border: 1px solid var(--line); background: var(--white); }
 .overview-card-dark { border-color: var(--night); background: var(--night); color: var(--white); }
@@ -153,6 +154,13 @@ h3 { font-size: 19px; }
 .empty-stamp { display: grid; width: 54px; height: 54px; margin: 0 auto 20px; place-items: center; border: 1px solid var(--rust); color: var(--rust); font: 30px var(--display); }
 .empty-state h2, .empty-state h3 { margin-bottom: 9px; font-family: var(--display); }
 .empty-state p { max-width: 390px; margin: 0 auto 23px; color: var(--muted); font-size: 13px; }
+.dashboard-tool-links { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 58px; }
+.dashboard-tool-links a { display: grid; grid-template-columns: 35px 1fr 20px; grid-template-rows: auto auto; column-gap: 12px; padding: 22px; border: 1px solid var(--line); background: var(--white); transition: border-color .2s ease, transform .2s ease; }
+.dashboard-tool-links a:hover { border-color: var(--rust); transform: translateY(-2px); }
+.dashboard-tool-links span { grid-row: 1 / 3; color: var(--rust); font: 11px var(--mono); }
+.dashboard-tool-links strong { font-size: 14px; }
+.dashboard-tool-links small { color: var(--muted); font-size: 11px; }
+.dashboard-tool-links b { grid-column: 3; grid-row: 1 / 3; align-self: center; color: var(--rust); font-weight: 400; }
 
 /* Forms and detail pages */
 .form-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 105px; max-width: 980px; margin: 64px auto 0; }
@@ -185,6 +193,15 @@ h3 { font-size: 19px; }
 .price-block span, .price-block small { color: #bec5bb; }
 .price-block strong { display: block; margin: 12px 0 8px; font: 36px var(--display); }
 .detail-side .button-secondary { margin-top: 10px; border-color: rgba(255,255,255,.3); color: var(--white); }
+.button-quiet { margin-top: 10px; border-color: transparent; color: #d9b0a3; }
+.detail-action-form { margin: 0; }
+.detail-action-form .button { margin-top: 10px; }
+.availability-layout { display: grid; grid-template-columns: .7fr 1.3fr; gap: 40px; }
+.availability-list { border-top: 1px solid var(--line); }
+.availability-row { display: grid; grid-template-columns: 1fr auto auto; gap: 20px; align-items: center; padding: 19px 4px; border-bottom: 1px solid var(--line); }
+.availability-row strong, .availability-row small { display: block; }
+.availability-row strong { font-size: 14px; }
+.availability-row small { margin-top: 4px; color: var(--muted); font-size: 11px; }
 .profile-edit-layout { margin-top: 22px; }
 .photographer-profile-head { display: grid; grid-template-columns: 300px 1fr; gap: 62px; align-items: center; max-width: 970px; margin: 55px auto 25px; }
 .profile-large-image { width: 300px; height: 360px; }
@@ -216,6 +233,16 @@ h3 { font-size: 19px; }
 .center-state > p:not(.eyebrow) { margin: 17px auto 25px; color: var(--muted); font-size: 14px; }
 .center-actions { justify-content: center; }
 .payment-price { border: 0; }
+.manage-albums { border-top: 1px solid var(--line); }
+.manage-album { padding: 28px 0 32px; border-bottom: 1px solid var(--line); }
+.manage-album-head { display: flex; justify-content: space-between; gap: 20px; align-items: start; margin-bottom: 18px; }
+.manage-album-head h2 { margin: 8px 0 5px; font-size: 33px; }
+.manage-album-head p { color: var(--muted); font-size: 12px; }
+.manage-photo-strip { display: grid; grid-template-columns: repeat(4, 1fr) 110px; gap: 10px; }
+.manage-photo-strip img { width: 100%; height: 145px; object-fit: cover; }
+.manage-photo-strip > span { display: grid; height: 145px; place-items: center; border: 1px dashed var(--line); color: var(--muted); font-size: 11px; }
+.photo-add { display: grid; height: 145px; place-items: center; border: 1px dashed var(--rust); color: var(--rust); font: 30px var(--display); }
+.photo-add small { display: block; font: 10px var(--mono); text-transform: uppercase; }
 
 /* Footer */
 .site-footer { border-top: 1px solid var(--line); }
@@ -250,6 +277,7 @@ h3 { font-size: 19px; }
     .dashboard-overview { grid-template-columns: 1fr 1fr; }
     .overview-card:first-child { grid-column: 1 / -1; }
     .dashboard-profile { grid-template-columns: 100px 1fr; gap: 22px; padding: 22px; }
+    .dashboard-tool-links { grid-template-columns: 1fr; }
     .profile-image { width: 100px; height: 100px; }
     .profile-image span { font-size: 55px; }
     .profile-copy h2 { font-size: 28px; }
@@ -258,6 +286,7 @@ h3 { font-size: 19px; }
     .booking-amount { display: none; }
     .form-layout { grid-template-columns: 1fr; gap: 35px; margin-top: 35px; }
     .detail-layout { grid-template-columns: 1fr; gap: 35px; }
+    .availability-layout { grid-template-columns: 1fr; }
     .detail-facts { grid-template-columns: 1fr; gap: 18px; }
     .photographer-profile-head { grid-template-columns: 110px 1fr; gap: 25px; margin-top: 35px; }
     .profile-large-image { width: 110px; height: 135px; }
@@ -268,6 +297,8 @@ h3 { font-size: 19px; }
     .photo-grid { grid-template-columns: 1fr 1fr; }
     .photo-item img { height: 200px; }
     .photo-grid-large .photo-item img { height: 310px; }
+    .manage-photo-strip { grid-template-columns: repeat(2, 1fr) 80px; }
+    .manage-photo-strip img, .manage-photo-strip > span, .photo-add { height: 105px; }
     .footer-content { align-items: start; flex-direction: column; }
 }
 @media (max-width: 480px) {

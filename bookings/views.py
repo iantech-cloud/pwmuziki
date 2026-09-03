@@ -1,8 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
-from .forms import BookingForm
-from .models import Booking
+from .forms import AvailabilityForm, BookingForm, BookingStatusForm
+from .models import Availability, Booking, BookingStatus
 from .services import create_booking
 
 @login_required
@@ -24,6 +24,73 @@ def booking_create(request):
         else:
             return redirect('booking_list')
     return render(request, 'bookings/form.html', {'form': form})
+
+
+@login_required
+def booking_update(request, pk):
+    booking = get_object_or_404(Booking, pk=pk, client=request.user, status=BookingStatus.PENDING)
+    form = BookingForm(request.POST or None, instance=booking, user=request.user)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('booking_detail', pk=booking.pk)
+    return render(request, 'bookings/form.html', {'form': form, 'booking': booking})
+
+
+@login_required
+def booking_cancel(request, pk):
+    booking = get_object_or_404(Booking, pk=pk)
+    if request.user not in (booking.client, booking.photographer):
+        raise PermissionDenied
+    if request.method == 'POST' and booking.status in (BookingStatus.PENDING, BookingStatus.CONFIRMED):
+        booking.status = BookingStatus.CANCELLED
+        booking.save(update_fields=['status', 'updated_at'])
+    return redirect('booking_detail', pk=booking.pk)
+
+
+@login_required
+def booking_status_update(request, pk):
+    booking = get_object_or_404(Booking, pk=pk, photographer=request.user)
+    if request.method == 'POST':
+        form = BookingStatusForm(request.POST)
+        if form.is_valid():
+            next_status = form.cleaned_data['status']
+            allowed = {
+                BookingStatus.PENDING: {'confirmed', 'cancelled'},
+                BookingStatus.CONFIRMED: {'completed', 'cancelled'},
+            }
+            if next_status in allowed.get(booking.status, set()):
+                booking.status = next_status
+                booking.save(update_fields=['status', 'updated_at'])
+    return redirect('booking_detail', pk=booking.pk)
+
+
+@login_required
+def availability_manage(request):
+    if request.user.role != 'photographer':
+        return redirect('booking_list')
+    form = AvailabilityForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        availability, _ = Availability.objects.update_or_create(
+            photographer=request.user,
+            date=form.cleaned_data['date'],
+            defaults={
+                'is_available': form.cleaned_data['is_available'],
+                'notes': form.cleaned_data['notes'],
+            },
+        )
+        return redirect('availability_manage')
+    availability = Availability.objects.filter(photographer=request.user)
+    return render(request, 'bookings/availability.html', {'form': form, 'availability': availability})
+
+
+@login_required
+def availability_toggle(request, pk):
+    availability = get_object_or_404(Availability, pk=pk, photographer=request.user)
+    if request.method == 'POST':
+        availability.is_available = not availability.is_available
+        availability.save(update_fields=['is_available'])
+    return redirect('availability_manage')
+
 
 @login_required
 def booking_detail(request, pk):

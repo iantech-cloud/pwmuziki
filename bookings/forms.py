@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from users.models import User
-from .models import Booking
+from .models import Availability, Booking
 
 class BookingForm(forms.ModelForm):
     class Meta:
@@ -28,3 +28,27 @@ class BookingForm(forms.ModelForm):
             if cleaned['deposit_amount'] > cleaned['quoted_price']:
                 self.add_error('deposit_amount', 'The deposit cannot be greater than the quoted price.')
         return cleaned
+
+
+class AvailabilityForm(forms.ModelForm):
+    class Meta:
+        model = Availability
+        fields = ('date', 'is_available', 'notes')
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'notes': forms.TextInput(attrs={'placeholder': 'Optional note for this date'}),
+        }
+
+    def clean_date(self):
+        date = self.cleaned_data['date']
+        if date < timezone.localdate():
+            raise ValidationError('Availability must be a future date.')
+        return date
+
+
+class BookingStatusForm(forms.Form):
+    status = forms.ChoiceField(choices=(
+        ('confirmed', 'Confirm booking'),
+        ('completed', 'Mark as completed'),
+        ('cancelled', 'Cancel booking'),
+    ))

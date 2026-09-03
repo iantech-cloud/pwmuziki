@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}New album | Pwmuziki{% endblock %}
+{% block content %}
+<section class="form-layout"><div class="form-intro"><p class="eyebrow">Your work</p><h1>Give this<br><em>chapter a name.</em></h1><p>Albums help your work tell a story instead of sitting in a pile.</p></div><div class="form-card"><form method="post" class="site-form">{% csrf_token %}{% for field in form %}<div class="form-field{% if field.errors %} has-error{% endif %}">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}<button class="button button-primary" type="submit">Create album <span aria-hidden="true">↗</span></button></form></div></section>
+{% endblock %}

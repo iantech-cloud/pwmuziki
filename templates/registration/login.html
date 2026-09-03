@@ -40,11 +40,10 @@
 
         </form>
 
-        <p class="auth-footer-link">
-            <a href="{% url 'password_reset' %}">
-                Forgot your password?
-            </a>
-        </p>
+        <div class="auth-footer-links">
+            <a href="{% url 'password_reset' %}">Forgot your password?</a>
+            <span>New here? <a href="{% url 'register' %}">Create an account</a></span>
+        </div>
 
     </div>
 

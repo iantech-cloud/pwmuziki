@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Add photograph | Pwmuziki{% endblock %}
+{% block content %}
+<section class="form-layout"><div class="form-intro"><p class="eyebrow">{{ album.title }}</p><h1>Choose the<br><em>good ones.</em></h1><p>Add the images that show the way you work. Licensing notes stay attached to every upload.</p></div><div class="form-card"><form method="post" enctype="multipart/form-data" class="site-form">{% csrf_token %}{% for field in form %}<div class="form-field{% if field.errors %} has-error{% endif %}">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}<button class="button button-primary" type="submit">Add photograph <span aria-hidden="true">↗</span></button></form></div></section>
+{% endblock %}
