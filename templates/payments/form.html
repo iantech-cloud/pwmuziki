@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Pay booking | Pwmuziki{% endblock %}
+{% block content %}
+<section class="form-layout">
+    <div class="form-intro"><p class="eyebrow">Settle the balance</p><h1>Keep the<br><em>plan moving.</em></h1><p>Your remaining balance for {{ booking.event_type }} is ready when you are.</p></div>
+    <div class="form-card"><div class="price-block payment-price"><span>Balance due</span><strong>KES {{ booking.balance|floatformat:0 }}</strong><small>Secure M-Pesa checkout</small></div>
+        {% if error %}<div class="form-errors">{{ error }}</div>{% endif %}
+        <form method="post" class="site-form">{% csrf_token %}<div class="form-field"><label for="phone_number">M-Pesa phone number</label><input id="phone_number" name="phone_number" type="tel" placeholder="+254 700 000 000" required></div><button class="button button-primary" type="submit">Send payment request <span aria-hidden="true">↗</span></button></form>
+    </div>
+</section>
+{% endblock %}

@@ -1,1 +1,23 @@
-{% extends 'base.html' %}{% block title %}Booking details | Pwmuziki{% endblock %}{% block content %}<article class="card"><h1>{{ booking.event_type }}</h1><p><strong>Date:</strong> {{ booking.event_date }}</p><p><strong>Location:</strong> {{ booking.location }}</p><p><strong>Photographer:</strong> {{ booking.photographer.get_full_name|default:booking.photographer.username }}</p><p><strong>Status:</strong> {{ booking.get_status_display }}</p><p><strong>Quote:</strong> {{ booking.quoted_price }} · <strong>Balance:</strong> {{ booking.balance }}</p><p>{{ booking.details }}</p></article>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}{{ booking.event_type }} | Pwmuziki{% endblock %}
+{% block content %}
+<div class="detail-back"><a href="{% url 'booking_list' %}" class="text-link">← Back to bookings</a></div>
+<section class="detail-layout">
+    <div class="detail-main">
+        <p class="eyebrow">Booking request</p>
+        <h1>{{ booking.event_type }}</h1>
+        <p class="detail-lede">{{ booking.details|default:"A new story waiting to be made." }}</p>
+        <div class="detail-facts">
+            <div><span>Date</span><strong>{{ booking.event_date|date:"l, j F Y" }}</strong></div>
+            <div><span>Place</span><strong>{{ booking.location }}</strong></div>
+            <div><span>{% if request.user.role == 'client' %}Photographer{% else %}Client{% endif %}</span><strong>{% if request.user.role == 'client' %}{{ booking.photographer.profile.display_name }}{% else %}{{ booking.client.profile.display_name }}{% endif %}</strong></div>
+        </div>
+    </div>
+    <aside class="detail-side">
+        <span class="status status-{{ booking.status }}">{{ booking.get_status_display }}</span>
+        <div class="price-block"><span>Quoted total</span><strong>KES {{ booking.quoted_price|floatformat:0 }}</strong><small>Deposit: KES {{ booking.deposit_amount|floatformat:0 }} · Balance: KES {{ booking.balance|floatformat:0 }}</small></div>
+        {% if request.user == booking.client and booking.balance and booking.status != 'cancelled' %}<a href="{% url 'payment_start' booking.pk %}" class="button button-primary button-full">Pay balance <span aria-hidden="true">↗</span></a>{% endif %}
+        {% if request.user == booking.client and booking.status == 'completed' and not booking.review %}<a href="{% url 'review_create' booking.pk %}" class="button button-secondary button-full">Leave a review <span aria-hidden="true">→</span></a>{% endif %}
+    </aside>
+</section>
+{% endblock %}

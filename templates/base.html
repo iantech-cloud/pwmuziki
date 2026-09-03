@@ -4,163 +4,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>{% block title %}Pwmuziki - Find Your Photographer{% endblock %}</title>
-
+    <meta name="description" content="Pwmuziki connects you with photographers whose work feels like you.">
+    <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+    <title>{% block title %}Pwmuziki — photographs with feeling{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'style.css' %}">
-
     {% block extra_css %}{% endblock %}
 </head>
-
 <body>
-
-<header class="site-header">
-    <nav class="navbar">
-
-        <a href="{% url 'home' %}" class="logo">
-            <span class="logo-icon">
-                <svg class="icon icon-camera"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     xmlns="http://www.w3.org/2000/svg"
-                     aria-hidden="true">
-                    <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linejoin="round"/>
-                    <circle cx="12" cy="14" r="3.5"
-                            stroke="currentColor"
-                            stroke-width="2"/>
-                </svg>
-            </span>
-
-            <span>Pwmuziki</span>
-        </a>
-
-        <button class="mobile-menu"
-                onclick="toggleMenu()"
-                aria-label="Toggle navigation">
-            <svg class="icon icon-menu"
-                 viewBox="0 0 24 24"
-                 fill="none"
-                 xmlns="http://www.w3.org/2000/svg"
-                 aria-hidden="true">
-                <line x1="3" y1="6" x2="21" y2="6"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"/>
-                <line x1="3" y1="12" x2="21" y2="12"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"/>
-                <line x1="3" y1="18" x2="21" y2="18"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"/>
-            </svg>
-        </button>
-
-        <div class="nav-links" id="navLinks">
-
-            <a href="{% url 'home' %}">Home</a>
-
-            {% if user.is_authenticated %}
-
-                <a href="{% url 'booking_list' %}">My Bookings</a>
-
-                <a href="{% url 'dashboard' %}">Dashboard</a>
-
-                <a href="{% url 'logout' %}">Log out</a>
-
-            {% else %}
-
-                <a href="{% url 'login' %}">Log in</a>
-
-                <a href="{% url 'register' %}" class="nav-join">
-                    Join Pwmuziki
-                </a>
-
-            {% endif %}
-
-        </div>
-
-    </nav>
-</header>
-
-
-<main class="container">
-    {% block content %}{% endblock %}
-</main>
-
-
-<footer class="site-footer">
-
-    <div class="footer-content">
-
-        <div class="footer-brand">
-
-            <div class="logo">
-                <span class="logo-icon">
-                    <svg class="icon icon-camera"
-                         viewBox="0 0 24 24"
-                         fill="none"
-                         xmlns="http://www.w3.org/2000/svg"
-                         aria-hidden="true">
-                        <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linejoin="round"/>
-                        <circle cx="12" cy="14" r="3.5"
-                                stroke="currentColor"
-                                stroke-width="2"/>
-                    </svg>
-                </span>
-
-                <span>Pwmuziki</span>
+    <header class="site-header">
+        <nav class="navbar shell" aria-label="Main navigation">
+            <a href="{% url 'home' %}" class="logo" aria-label="Pwmuziki home">
+                <span class="logo-mark">P</span>
+                <span class="logo-word">pwmuziki</span>
+            </a>
+            <button class="mobile-menu" onclick="toggleMenu()" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="nav-links" id="navLinks">
+                <a href="{% url 'home' %}">Explore</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'booking_list' %}">My bookings</a>
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="nav-muted">Log out</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Log in</a>
+                    <a href="{% url 'register' %}" class="nav-join">Join the community</a>
+                {% endif %}
             </div>
+        </nav>
+    </header>
 
-            <p>
-                Find photographers, compare their work,
-                and book the right person for your next shoot.
-            </p>
+    <main class="shell page-content">
+        {% if messages %}
+            <div class="messages" aria-live="polite">
+                {% for message in messages %}<div class="message message-{{ message.tags }}">{{ message }}</div>{% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
 
+    <footer class="site-footer">
+        <div class="shell footer-content">
+            <div class="footer-brand">
+                <a href="{% url 'home' %}" class="logo"><span class="logo-mark">P</span><span class="logo-word">pwmuziki</span></a>
+                <p>Photography for the moments<br>you want to keep close.</p>
+            </div>
+            <div class="footer-note">
+                <span>Made for real stories</span>
+                <span>© 2026 Pwmuziki</span>
+            </div>
         </div>
+    </footer>
 
-        <div class="footer-links">
-
-            <a href="{% url 'home' %}">Home</a>
-
-            {% if user.is_authenticated %}
-
-                <a href="{% url 'booking_list' %}">Bookings</a>
-
-                <a href="{% url 'dashboard' %}">Dashboard</a>
-
-            {% else %}
-
-                <a href="{% url 'login' %}">Login</a>
-
-                <a href="{% url 'register' %}">Register</a>
-
-            {% endif %}
-
-        </div>
-
-    </div>
-
-    <div class="copyright">
-        © 2026 Pwmuziki. All rights reserved.
-    </div>
-
-</footer>
-
-
-<script>
-    function toggleMenu() {
-        const nav = document.getElementById("navLinks");
-        nav.classList.toggle("active");
-    }
-</script>
-
+    <script>
+        function toggleMenu() {
+            const nav = document.getElementById("navLinks");
+            const button = document.querySelector(".mobile-menu");
+            const isOpen = nav.classList.toggle("active");
+            button.setAttribute("aria-expanded", isOpen);
+        }
+    </script>
 </body>
 </html>

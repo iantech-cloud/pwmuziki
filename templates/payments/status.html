@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Payment update | Pwmuziki{% endblock %}
+{% block content %}
+<section class="center-state"><span class="empty-stamp">{% if error %}!{% else %}P{% endif %}</span><p class="eyebrow">{% if error %}Payment needs attention{% else %}Payment update{% endif %}</p><h1>{% if error %}We couldn’t start that payment.{% else %}You’re all set for now.{% endif %}</h1><p>{{ error|default:message }}</p><div class="center-actions"><a href="{% url 'booking_detail' booking.pk %}" class="button button-primary">Back to booking <span aria-hidden="true">→</span></a>{% if error %}<a href="{% url 'payment_start' booking.pk %}" class="text-link">Try again</a>{% endif %}</div></section>
+{% endblock %}

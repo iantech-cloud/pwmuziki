@@ -11,6 +11,14 @@ def _request(url, *, method='GET', headers=None, payload=None):
         return json.loads(response.read())
 
 def mpesa_access_token():
+    if not all([
+        settings.MPESA_CONSUMER_KEY,
+        settings.MPESA_CONSUMER_SECRET,
+        settings.MPESA_SHORTCODE,
+        settings.MPESA_PASSKEY,
+        settings.MPESA_CALLBACK_URL,
+    ]):
+        raise RuntimeError('M-Pesa is not configured yet. Add the provider settings before taking payments.')
     credentials = f'{settings.MPESA_CONSUMER_KEY}:{settings.MPESA_CONSUMER_SECRET}'.encode()
     return _request(settings.MPESA_AUTH_URL, headers={'Authorization': f'Basic {base64.b64encode(credentials).decode()}'})['access_token']
 

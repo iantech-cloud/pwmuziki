@@ -1,342 +1,91 @@
 {% extends 'base.html' %}
-
-{% block title %}
-    Find Your Photographer | Pwmuziki
-{% endblock %}
-
+{% block title %}Pwmuziki — photographs with feeling{% endblock %}
 
 {% block content %}
-
-<!-- =====================================
-     HERO SECTION
-===================================== -->
-
-<section class="hero">
-
-    <div class="hero-content">
-
-        <div class="hero-badge">
-            <svg class="icon icon-sparkle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M12 2L13.9 9.1L21 11L13.9 12.9L12 20L10.1 12.9L3 11L10.1 9.1L12 2Z" fill="currentColor"/>
-            </svg>
-            Find your perfect photographer
-        </div>
-
-        <h1>
-            Capture moments.
-            <span>Keep them forever.</span>
-        </h1>
-
-        <p>
-            Discover talented photographers, explore their work,
-            and book the right professional for your next
-            unforgettable moment.
-        </p>
-
+<section class="home-hero">
+    <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-line"></span> A home for good photographs</p>
+        <h1>Find the people<br>behind the <em>beautiful</em> work.</h1>
+        <p class="hero-lede">From loud celebrations to the quiet in-between, discover photographers who know how to make a moment feel like yours.</p>
         <div class="hero-actions">
-
-            <a
-                href="{% url 'login' %}"
-                class="button button-primary"
-            >
-                <svg class="icon icon-search" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-                    <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                Find a Photographer
-            </a>
-
-            <a
-                href="{% url 'register' %}"
-                class="button button-secondary"
-            >
-                Become a Photographer
-            </a>
-
+            <a href="#photographers" class="button button-primary">Explore photographers <span aria-hidden="true">↘</span></a>
+            <a href="{% url 'register' %}" class="text-link">Share your work <span aria-hidden="true">→</span></a>
         </div>
-
+        <div class="hero-caption"><span class="caption-dot"></span> Nairobi and beyond</div>
     </div>
-
-
-    <!-- Decorative photography visual -->
-
-    <div class="hero-visual">
-
-        <div class="music-disc">
-
-            <div class="disc-center">
-                <svg class="icon icon-camera" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                    <circle cx="12" cy="14" r="3.5" stroke="currentColor" stroke-width="2"/>
-                </svg>
-            </div>
-
+    <div class="hero-image-wrap">
+        <div class="hero-image-frame">
+            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1100&q=85" alt="A couple walking together during a sunlit outdoor wedding">
         </div>
-
+        <div class="hero-note">
+            <span class="note-kicker">The way it felt</span>
+            <span class="note-text">is the part<br>we remember.</span>
+        </div>
+        <span class="image-index">01 <span>/ 04</span></span>
     </div>
-
 </section>
 
+<section class="intro-strip" aria-label="Pwmuziki introduction">
+    <p class="intro-number">01</p>
+    <p class="intro-statement">The right photograph doesn’t just show you what happened. It brings you back.</p>
+    <p class="intro-copy">Pwmuziki is a thoughtful place to find photographers with a point of view — and book them for the days that matter.</p>
+</section>
 
-
-<!-- =====================================
-     FEATURED PHOTOGRAPHERS
-===================================== -->
-
-<section class="section">
-
-    <div class="section-header">
-
+<section class="section" id="photographers">
+    <div class="section-heading">
         <div>
-
-            <h2 class="section-title">
-                Featured Photographers
-            </h2>
-
-            <p class="section-subtitle">
-                Discover talented photographers ready to
-                capture your special moments.
-            </p>
-
+            <p class="eyebrow">The directory</p>
+            <h2>People with a<br><em>point of view.</em></h2>
         </div>
-
+        <p class="section-aside">Browse the work first.<br>Choose the feeling.</p>
     </div>
-
-
-    <div class="grid">
-
+    <div class="photographer-grid">
         {% for photographer in photographers %}
-
-            <article class="card music-card">
-
-                <!-- Photographer cover -->
-
-                <div class="music-cover">
-
-                    {% if photographer.profile.avatar %}
-
-                        <img
-                            src="{{ photographer.profile.avatar.url }}"
-                            alt="{{ photographer.get_full_name|default:photographer.username }}"
-                            class="music-cover-img"
-                        >
-
-                    {% else %}
-
-                        <svg class="icon icon-camera" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                            <circle cx="12" cy="14" r="3.5" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-
-                    {% endif %}
-
+        <article class="photographer-card">
+            <a href="{% url 'photographer_detail' photographer.pk %}" class="photographer-cover">
+                {% if photographer.profile.avatar %}
+                    <img src="{{ photographer.profile.avatar.url }}" alt="{{ photographer.profile.display_name }}">
+                {% else %}
+                    <div class="cover-placeholder cover-{{ forloop.counter|divisibleby:4|yesno:'warm,light' }}" aria-hidden="true"></div>
+                {% endif %}
+                <span class="cover-arrow" aria-hidden="true">↗</span>
+            </a>
+            <div class="photographer-meta">
+                <div>
+                    <h3>{{ photographer.profile.display_name }}</h3>
+                    <p>{{ photographer.profile.bio|default:"Portraits, celebrations, and honest in-between moments."|truncatewords:12 }}</p>
                 </div>
-
-
-                <div class="music-info">
-
-                    <h3 class="music-title">
-
-                        {{ photographer.get_full_name|default:photographer.username }}
-
-                    </h3>
-
-
-                    <p class="music-artist">
-
-                        {{ photographer.profile.bio|default:"Professional photographer" }}
-
-                    </p>
-
-
-                    <div class="music-view-profile-wrap">
-
-                        <a
-                            href="{% url 'login' %}"
-                            class="button button-secondary button-full"
-                        >
-                            View Profile
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </article>
-
-
+                <span class="card-number">0{{ forloop.counter }}</span>
+            </div>
+        </article>
         {% empty %}
-
-            <div class="card">
-
-                <div class="feature-icon">
-                    <svg class="icon icon-camera" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                        <circle cx="12" cy="14" r="3.5" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                </div>
-
-                <h3>
-                    Photographers are joining Pwmuziki
-                </h3>
-
-                <p>
-                    Our photographer community is growing.
-                    Check back soon to discover talented
-                    professionals near you.
-                </p>
-
-            </div>
-
-        {% endfor %}
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================
-     WHY PWMUZIKI
-===================================== -->
-
-<section class="section">
-
-    <div class="section-header">
-
-        <div>
-
-            <h2 class="section-title">
-                Why choose Pwmuziki?
-            </h2>
-
-            <p class="section-subtitle">
-                Everything you need to find and book
-                photography services with confidence.
-            </p>
-
+        <div class="empty-directory">
+            <p class="eyebrow">The first roll is waiting</p>
+            <h3>Photographers are joining the community.</h3>
+            <p>Be one of the first to share the work you’re proud of.</p>
+            <a href="{% url 'register' %}" class="button button-secondary">Join as a photographer <span aria-hidden="true">→</span></a>
         </div>
-
+        {% endfor %}
     </div>
-
-
-    <div class="grid">
-
-
-        <!-- Feature 1 -->
-
-        <article class="card">
-
-            <div class="feature-icon">
-                <svg class="icon icon-search" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-                    <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </div>
-
-            <h3>
-                Discover Great Photographers
-            </h3>
-
-            <p>
-                Browse talented photographers and
-                explore their work before making
-                your decision.
-            </p>
-
-        </article>
-
-
-        <!-- Feature 2 -->
-
-        <article class="card">
-
-            <div class="feature-icon">
-                <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
-                    <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
-                    <line x1="8" y1="3" x2="8" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="16" y1="3" x2="16" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </div>
-
-            <h3>
-                Easy Booking
-            </h3>
-
-            <p>
-                Find the right photographer and
-                request a booking without the
-                usual hassle.
-            </p>
-
-        </article>
-
-
-        <!-- Feature 3 -->
-
-        <article class="card">
-
-            <div class="feature-icon">
-                <svg class="icon icon-shield" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-
-            <h3>
-                Book With Confidence
-            </h3>
-
-            <p>
-                View photographer profiles and
-                their information before choosing
-                who will capture your moments.
-            </p>
-
-        </article>
-
-
-    </div>
-
 </section>
 
-
-
-<!-- =====================================
-     PHOTOGRAPHER CTA
-===================================== -->
-
-<section class="card cta-photographer-section">
-
-    <div class="cta-photographer-icon">
-        <svg class="icon icon-camera" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <circle cx="12" cy="14" r="3.5" stroke="currentColor" stroke-width="2"/>
-        </svg>
+<section class="manifesto">
+    <div class="manifesto-mark">P</div>
+    <div>
+        <p class="eyebrow">How we see it</p>
+        <h2>Less posing.<br>More <em>presence.</em></h2>
     </div>
-
-
-    <h2 class="cta-photographer-title">
-        Are you a photographer?
-    </h2>
-
-
-    <p class="cta-photographer-text">
-        Showcase your work, connect with new clients,
-        and grow your photography business through
-        Pwmuziki.
-    </p>
-
-
-    <a
-        href="{% url 'register' %}"
-        class="button button-primary"
-    >
-        Join Pwmuziki
-    </a>
-
+    <p class="manifesto-copy">The best images are not always the most perfect. They are the ones with a little life left in them — the laugh before the pose, the light through the window, the hand you forgot was there.</p>
 </section>
 
-
+<section class="cta-band">
+    <div>
+        <p class="eyebrow">For photographers</p>
+        <h2>Your work deserves<br>a good <em>home.</em></h2>
+    </div>
+    <div class="cta-band-action">
+        <p>Put your perspective in front of people looking for something real.</p>
+        <a href="{% url 'register' %}" class="button button-primary">Create your profile <span aria-hidden="true">↗</span></a>
+    </div>
+</section>
 {% endblock %}

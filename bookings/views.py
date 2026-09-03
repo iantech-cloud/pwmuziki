@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from .forms import BookingForm
 from .models import Booking
@@ -12,6 +13,8 @@ def booking_list(request):
 
 @login_required
 def booking_create(request):
+    if request.user.role != 'client':
+        return redirect('booking_list')
     form = BookingForm(request.POST or None, user=request.user)
     if request.method == 'POST' and form.is_valid():
         try:
@@ -22,6 +25,9 @@ def booking_create(request):
             return redirect('booking_list')
     return render(request, 'bookings/form.html', {'form': form})
 
+@login_required
 def booking_detail(request, pk):
     booking = get_object_or_404(Booking.objects.select_related('client', 'photographer'), pk=pk)
+    if request.user != booking.client and request.user != booking.photographer:
+        raise PermissionDenied
     return render(request, 'bookings/detail.html', {'booking': booking})

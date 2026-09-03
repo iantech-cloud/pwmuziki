@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Leave a review | Pwmuziki{% endblock %}
+{% block content %}
+<section class="form-layout">
+    <div class="form-intro"><p class="eyebrow">After the moment</p><h1>Leave a<br><em>good word.</em></h1><p>Your perspective helps thoughtful clients find thoughtful photographers.</p></div>
+    <div class="form-card"><div class="form-context"><span>Booking</span><strong>{{ booking.event_type }}</strong><small>{{ booking.photographer.profile.display_name }} · {{ booking.event_date|date:"j F Y" }}</small></div>
+        <form method="post" class="site-form">{% csrf_token %}{% for field in form %}<div class="form-field{% if field.errors %} has-error{% endif %}">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}<button class="button button-primary" type="submit">Publish review <span aria-hidden="true">↗</span></button></form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Edit profile | Pwmuziki{% endblock %}
+{% block content %}
+<section class="form-layout profile-edit-layout">
+    <div class="form-intro"><p class="eyebrow">Your story</p><h1>Make it<br><em>feel like you.</em></h1><p>This is the part people read before they reach out. Keep it honest, useful, and yours.</p></div>
+    <div class="form-card">
+        <form method="post" enctype="multipart/form-data" class="site-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+                <div class="form-field{% if field.errors %} has-error{% endif %}">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+            {% endfor %}
+            <div class="form-actions"><button class="button button-primary" type="submit">Save profile <span aria-hidden="true">↗</span></button><a href="{% url 'dashboard' %}" class="text-link">Cancel</a></div>
+        </form>
+    </div>
+</section>
+{% endblock %}

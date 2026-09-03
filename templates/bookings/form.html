@@ -1,1 +1,21 @@
-{% extends 'base.html' %}{% block title %}New booking | Pwmuziki{% endblock %}{% block content %}<div class="card"><h1>Request a booking</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button class="button" type="submit">Send request</button></form></div>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Request a booking | Pwmuziki{% endblock %}
+{% block content %}
+<section class="form-layout">
+    <div class="form-intro"><p class="eyebrow">Make a plan</p><h1>Start with<br><em>the feeling.</em></h1><p>Tell us what you’re imagining. The photographer can work out the details with you from there.</p></div>
+    <div class="form-card">
+        <form method="post" class="site-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+                <div class="form-field{% if field.errors %} has-error{% endif %}">
+                    {{ field.label_tag }}{{ field }}
+                    {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                </div>
+            {% endfor %}
+            <button class="button button-primary" type="submit">Send booking request <span aria-hidden="true">↗</span></button>
+        </form>
+    </div>
+</section>
+{% endblock %}

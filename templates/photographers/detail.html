@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ photographer.profile.display_name }} | Pwmuziki{% endblock %}
+{% block content %}
+<div class="detail-back"><a href="{% url 'home' %}" class="text-link">← Back to explore</a></div>
+<section class="photographer-profile-head">
+    <div class="profile-large-image">
+        {% if photographer.profile.avatar %}<img src="{{ photographer.profile.avatar.url }}" alt="{{ photographer.profile.display_name }}">{% else %}<span>{{ photographer.profile.display_name|slice:":1"|upper }}</span>{% endif %}
+    </div>
+    <div class="profile-head-copy">
+        <p class="eyebrow">Photographer</p>
+        <h1>{{ photographer.profile.display_name }}</h1>
+        <p>{{ photographer.profile.bio|default:"A photographer with an eye for the moments that happen naturally." }}</p>
+        <div class="profile-head-links">{% if photographer.profile.portfolio_link %}<a class="text-link" href="{{ photographer.profile.portfolio_link }}" target="_blank" rel="noopener">Visit portfolio ↗</a>{% endif %}{% if user.is_authenticated and user.role == 'client' %}<a class="button button-primary" href="{% url 'booking_create' %}">Request a booking <span aria-hidden="true">↗</span></a>{% elif not user.is_authenticated %}<a class="button button-primary" href="{% url 'register' %}">Join to book <span aria-hidden="true">↗</span></a>{% endif %}</div>
+    </div>
+</section>
+
+<section class="section portfolio-section">
+    <div class="section-heading compact"><div><p class="eyebrow">Selected work</p><h2>A few things<br>they’ve seen.</h2></div></div>
+    {% for album in albums %}
+    <div class="album">
+        <div class="album-heading"><div><h3><a href="{% url 'album_detail' album.pk %}">{{ album.title }} ↗</a></h3><p>{{ album.description }}</p></div>{% if album.category %}<span class="album-category">{{ album.category.name }}</span>{% endif %}</div>
+        <div class="photo-grid">
+            {% for photo in album.photos.all %}<figure class="photo-item"><img src="{{ photo.image.url }}" alt="{{ photo.caption|default:album.title }}" loading="lazy">{% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}</figure>{% empty %}<div class="photo-empty">This album is ready for its first photograph.</div>{% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state"><span class="empty-stamp">P</span><h2>The gallery is still developing.</h2><p>Check back soon for {{ photographer.profile.display_name }}’s latest work.</p></div>
+    {% endfor %}
+</section>
+{% endblock %}
