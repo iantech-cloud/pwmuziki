@@ -1,8 +1,12 @@
 from decimal import Decimal
+import json
 from uuid import uuid4
 
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from bookings.models import Booking, BookingStatus
 from .models import Invoice, Transaction
@@ -64,3 +68,38 @@ def payment_start(request, booking_id):
     if transaction.status == Transaction.Status.FAILED:
         return render(request, 'payments/status.html', {'booking': booking, 'error': response.get('ResponseDescription', 'M-Pesa could not start the payment.')})
     return render(request, 'payments/status.html', {'booking': booking, 'message': 'Payment request sent. Check your phone to approve it.'})
+
+
+@login_required
+def invoice_detail(request, booking_id):
+    booking = get_object_or_404(Booking, pk=booking_id)
+    if request.user not in (booking.client, booking.photographer):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+    invoice = Invoice.objects.filter(booking=booking).prefetch_related('transactions').first()
+    return render(request, 'payments/invoice.html', {'booking': booking, 'invoice': invoice})
+
+
+@csrf_exempt
+@require_POST
+def mpesa_callback(request):
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+        callback = payload['Body']['stkCallback']
+    except (ValueError, KeyError, TypeError):
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Invalid callback payload'}, status=400)
+
+    checkout_id = callback.get('CheckoutRequestID')
+    transaction = Transaction.objects.filter(provider_reference=checkout_id).select_related('invoice').first()
+    if not transaction:
+        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback acknowledged'})
+
+    transaction.raw_response = payload
+    if callback.get('ResultCode') == 0:
+        transaction.status = Transaction.Status.SUCCESS
+        transaction.invoice.is_paid = True
+        transaction.invoice.save(update_fields=['is_paid'])
+    else:
+        transaction.status = Transaction.Status.FAILED
+    transaction.save(update_fields=['status', 'raw_response'])
+    return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback processed'})

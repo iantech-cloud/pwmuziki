@@ -27,3 +27,37 @@ class Transaction(models.Model):
 class Payment(Transaction):
     class Meta:
         proxy = True
+
+
+class Refund(models.Model):
+    class Status(models.TextChoices):
+        REQUESTED = 'requested', 'Requested'
+        APPROVED = 'approved', 'Approved'
+        PROCESSED = 'processed', 'Processed'
+        REJECTED = 'rejected', 'Rejected'
+
+    transaction = models.ForeignKey(Transaction, on_delete=models.PROTECT, related_name='refunds')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    reason = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.REQUESTED)
+    provider_reference = models.CharField(max_length=120, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.amount <= 0 or self.amount > self.transaction.amount:
+            raise ValidationError('Refund amount must be positive and no greater than the transaction.')
+
+
+class Payout(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        PAID = 'paid', 'Paid'
+        FAILED = 'failed', 'Failed'
+
+    transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT, related_name='payout')
+    photographer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='payouts')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    provider_reference = models.CharField(max_length=120, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)

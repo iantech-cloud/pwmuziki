@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Respond to review | Pwmuziki{% endblock %}
+{% block content %}
+<section class="form-layout"><div class="form-intro"><p class="eyebrow">Your community</p><h1>Answer with<br><em>your voice.</em></h1><p>A gracious response turns a good review into the start of a lasting relationship.</p></div><div class="form-card"><div class="form-context"><span>{{ review.client.get_full_name|default:review.client.username }} wrote</span><strong>{{ review.title|default:"A thoughtful experience" }}</strong><small>{{ review.body|truncatewords:25 }}</small></div><form method="post" class="site-form">{% csrf_token %}{% for field in form %}<div class="form-field">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}<button class="button button-primary" type="submit">Save response <span aria-hidden="true">↗</span></button></form></div></section>
+{% endblock %}

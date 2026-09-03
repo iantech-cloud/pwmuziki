@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Invoice {{ invoice.number|default:"pending" }} | Pwmuziki{% endblock %}
+{% block content %}
+<div class="detail-back"><a href="{% url 'booking_detail' booking.pk %}" class="text-link">← Back to booking</a></div>
+<section class="invoice-card">
+    <div class="invoice-header"><div><p class="eyebrow">Pwmuziki invoice</p><h1>{% if invoice %}{{ invoice.number }}{% else %}Invoice pending{% endif %}</h1></div>{% if invoice %}<span class="status {% if invoice.is_paid %}status-confirmed{% else %}status-pending{% endif %}">{% if invoice.is_paid %}Paid{% else %}Open{% endif %}</span>{% endif %}</div>
+    <div class="invoice-meta"><div><span>For</span><strong>{{ booking.event_type }}</strong></div><div><span>Date</span><strong>{{ booking.event_date|date:"j F Y" }}</strong></div><div><span>Photographer</span><strong>{{ booking.photographer.profile.display_name }}</strong></div></div>
+    <div class="invoice-total"><span>{% if invoice and invoice.is_paid %}Paid total{% else %}Balance due{% endif %}</span><strong>KES {% if invoice %}{{ invoice.total_amount|floatformat:0 }}{% else %}{{ booking.balance|floatformat:0 }}{% endif %}</strong></div>
+    {% if invoice %}<div class="transaction-list"><p class="eyebrow">Payment history</p>{% for transaction in invoice.transactions.all %}<div><span>{{ transaction.created_at|date:"j M Y, H:i" }}</span><strong>{{ transaction.get_status_display }}</strong><span>KES {{ transaction.amount|floatformat:0 }}</span></div>{% empty %}<p class="muted-copy">No payment attempts yet.</p>{% endfor %}</div>{% endif %}
+</section>
+{% endblock %}

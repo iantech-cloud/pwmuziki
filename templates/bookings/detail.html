@@ -16,6 +16,7 @@
     <aside class="detail-side">
         <span class="status status-{{ booking.status }}">{{ booking.get_status_display }}</span>
         <div class="price-block"><span>Quoted total</span><strong>KES {{ booking.quoted_price|floatformat:0 }}</strong><small>Deposit: KES {{ booking.deposit_amount|floatformat:0 }} · Balance: KES {{ booking.balance|floatformat:0 }}</small></div>
+        <a href="{% url 'invoice_detail' booking.pk %}" class="text-link detail-invoice-link">View invoice <span aria-hidden="true">→</span></a>
         {% if request.user == booking.client and booking.status == 'pending' %}<a href="{% url 'booking_update' booking.pk %}" class="button button-secondary button-full">Edit request <span aria-hidden="true">↗</span></a>{% endif %}
         {% if request.user == booking.client and booking.balance and booking.status != 'cancelled' %}<a href="{% url 'payment_start' booking.pk %}" class="button button-primary button-full">Pay balance <span aria-hidden="true">↗</span></a>{% endif %}
         {% if request.user == booking.client or request.user == booking.photographer %}{% if booking.status == 'pending' or booking.status == 'confirmed' %}<form method="post" action="{% url 'booking_cancel' booking.pk %}" class="detail-action-form">{% csrf_token %}<button class="button button-quiet button-full" type="submit">Cancel booking</button></form>{% endif %}{% endif %}

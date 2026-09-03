@@ -1,7 +1,8 @@
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from django.db.models import Prefetch
+from django.db.models import Avg, Prefetch
+from reviews.models import Review
 from .forms import ProfileForm, RegistrationForm
 from .models import Profile, User
 from portfolio.models import Album, Photo
@@ -39,7 +40,14 @@ def photographer_detail(request, pk):
         .prefetch_related(Prefetch('photos', queryset=Photo.objects.order_by('-uploaded_at')))
         .order_by('-created_at')
     )
-    return render(request, 'photographers/detail.html', {'photographer': photographer, 'albums': albums})
+    reviews = Review.objects.filter(photographer=photographer).select_related('client')
+    average_rating = reviews.aggregate(average=Avg('rating'))['average']
+    return render(request, 'photographers/detail.html', {
+        'photographer': photographer,
+        'albums': albums,
+        'reviews': reviews,
+        'average_rating': average_rating,
+    })
 
 
 @login_required

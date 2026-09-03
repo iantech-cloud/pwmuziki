@@ -1,6 +1,7 @@
 .auth-page { display: grid; grid-template-columns: 1fr 1fr; min-height: 560px; align-items: center; gap: 70px; max-width: 920px; margin: 20px auto; }
-.auth-page::before { content: 'The way it felt\\A is the part we remember.'; white-space: pre; display: block; padding: 50px 35px; background: var(--night); color: var(--white); font: italic clamp(36px, 4vw, 55px) var(--display); line-height: 1.08; }
-.auth-card { width: 100%; padding: 5px 0; }
+.auth-page::before { content: 'The way it felt\A is the part we remember.'; white-space: pre-wrap; overflow-wrap: anywhere; display: block; min-width: 0; padding: 50px 35px; background: var(--night); color: var(--white); font: italic clamp(30px, 3.2vw, 46px) var(--display); line-height: 1.08; }
+.auth-page > * { min-width: 0; }
+.auth-card { width: 100%; min-width: 0; padding: 5px 0; }
 .auth-icon { display: none; }
 .auth-title { margin-bottom: 9px; font: 500 49px var(--display); letter-spacing: -.04em; }
 .auth-subtitle { margin-bottom: 29px; color: var(--muted); font-size: 14px; }

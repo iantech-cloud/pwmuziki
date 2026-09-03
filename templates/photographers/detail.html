@@ -27,4 +27,23 @@
     <div class="empty-state"><span class="empty-stamp">P</span><h2>The gallery is still developing.</h2><p>Check back soon for {{ photographer.profile.display_name }}’s latest work.</p></div>
     {% endfor %}
 </section>
+
+<section class="section reviews-section">
+    <div class="section-heading compact">
+        <div><p class="eyebrow">Kind words</p><h2>From people<br><em>who were there.</em></h2></div>
+        {% if average_rating %}<div class="rating-summary"><strong>{{ average_rating|floatformat:1 }}</strong><span>★★★★★<small>{{ reviews|length }} review{{ reviews|length|pluralize }}</small></span></div>{% endif %}
+    </div>
+    <div class="review-list">
+        {% for review in reviews %}
+        <article class="review-card">
+            <div class="review-stars" aria-label="{{ review.rating }} out of 5 stars">{% for star in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+            <h3>{{ review.title|default:"A thoughtful experience" }}</h3>
+            <p>{{ review.body }}</p>
+            <footer><strong>{{ review.client.get_full_name|default:review.client.username }}</strong><span>{{ review.created_at|date:"F Y" }}</span></footer>
+            {% if review.photographer_response %}<div class="review-response"><span>Response from {{ photographer.profile.display_name }}</span><p>{{ review.photographer_response }}</p></div>{% endif %}
+            {% if request.user == photographer %}<a class="text-link review-respond-link" href="{% url 'review_respond' review.pk %}">{% if review.photographer_response %}Edit response{% else %}Respond{% endif %} →</a>{% endif %}
+        </article>
+        {% empty %}<div class="photo-empty">Reviews will appear here after a completed booking.</div>{% endfor %}
+    </div>
+</section>
 {% endblock %}
