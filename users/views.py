@@ -93,11 +93,11 @@ def dashboard(request):
     if request.user.role == User.Role.PHOTOGRAPHER:
         context['portfolio_albums'] = Album.objects.filter(photographer=request.user).prefetch_related('photos').order_by('-created_at')
         context['pending_count'] = bookings.filter(status='pending').count()
-        context['confirmed_count'] = bookings.filter(status='confirmed').count()
+        context['confirmed_count'] = bookings.filter(status__in=['reservation_due', 'reserved', 'arrival_confirmed', 'balance_due']).count()
         context['published_count'] = Album.objects.filter(photographer=request.user, is_public=True).count()
     else:
         context['awaiting_count'] = bookings.filter(status='pending').count()
-        context['balance_due'] = sum((booking.balance for booking in bookings.exclude(status='cancelled')), 0)
+        context['balance_due'] = sum((booking.balance for booking in bookings.filter(status='balance_due')), 0)
     return render(request, 'dashboard.html', context)
 
 

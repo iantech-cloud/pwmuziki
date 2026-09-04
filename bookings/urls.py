@@ -8,5 +8,6 @@ urlpatterns = [
     path('<int:pk>/edit/', views.booking_update, name='booking_update'),
     path('<int:pk>/cancel/', views.booking_cancel, name='booking_cancel'),
     path('<int:pk>/status/', views.booking_status_update, name='booking_status_update'),
+    path('<int:pk>/confirm-arrival/', views.booking_confirm_arrival, name='booking_confirm_arrival'),
     path('<int:pk>/', views.booking_detail, name='booking_detail'),
 ]

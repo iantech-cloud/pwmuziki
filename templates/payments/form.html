@@ -2,8 +2,8 @@
 {% block title %}Pay booking | Pwmuziki{% endblock %}
 {% block content %}
 <section class="form-layout">
-    <div class="form-intro"><p class="eyebrow">Settle the balance</p><h1>Keep the<br><em>plan moving.</em></h1><p>Your remaining balance for {{ booking.event_type }} is ready when you are.</p></div>
-    <div class="form-card"><div class="price-block payment-price"><span>Balance due</span><strong>KES {{ booking.balance|floatformat:0 }}</strong><small>Secure Safaricom Daraja STK Push</small></div>
+    <div class="form-intro"><p class="eyebrow">{% if phase == 'reservation' %}Secure your date{% else %}Settle the balance{% endif %}</p><h1>{% if phase == 'reservation' %}Hold the<br><em>date for you.</em>{% else %}Keep the<br><em>plan moving.</em>{% endif %}</h1><p>{% if phase == 'reservation' %}Pay 20% of the quote to reserve your photographer. We hold it in escrow until you confirm they have arrived.{% else %}The photographer has marked the work finished. Pay the remaining 80% to complete this booking.{% endif %}</p></div>
+    <div class="form-card"><div class="price-block payment-price"><span>{{ label|capfirst }} due</span><strong>KES {{ amount|floatformat:0 }}</strong><small>Secure Safaricom Daraja STK Push</small></div>
         {% if error %}<div class="form-errors">{{ error }}</div>{% endif %}
         <form method="post" class="site-form">{% csrf_token %}<div class="form-field"><label for="phone_number">Safaricom M-Pesa number</label><input id="phone_number" name="phone_number" type="tel" inputmode="tel" autocomplete="tel" placeholder="+254 700 000 000" required><small class="help-text">You’ll receive an STK Push on this phone.</small></div><button class="button button-primary" type="submit">Send STK Push <span aria-hidden="true">↗</span></button></form>
     </div>

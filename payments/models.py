@@ -6,6 +6,10 @@ class Invoice(models.Model):
     booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='invoice')
     number = models.CharField(max_length=40, unique=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    reservation_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    balance_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    reservation_paid = models.BooleanField(default=False)
+    balance_paid = models.BooleanField(default=False)
     due_date = models.DateField(null=True, blank=True)
     is_paid = models.BooleanField(default=False)
     issued_at = models.DateTimeField(auto_now_add=True)
@@ -15,11 +19,15 @@ class Transaction(models.Model):
         INITIATED = 'initiated', 'Initiated'
         SUCCESS = 'success', 'Success'
         FAILED = 'failed', 'Failed'
+    class Purpose(models.TextChoices):
+        RESERVATION = 'reservation', 'Reservation fee'
+        BALANCE = 'balance', 'Final balance'
     invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name='transactions')
     payer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     provider = models.CharField(max_length=30, default='mpesa')
     provider_reference = models.CharField(max_length=120, blank=True, unique=True, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    purpose = models.CharField(max_length=20, choices=Purpose.choices, default=Purpose.RESERVATION)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.INITIATED)
     raw_response = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -4,7 +4,7 @@
 <div class="detail-back"><a href="{% url 'booking_list' %}" class="text-link">← Back to bookings</a></div>
 <section class="detail-layout">
     <div class="detail-main">
-        <p class="eyebrow">Booking request</p>
+        <p class="eyebrow">{{ booking.service_type.name|default:booking.event_type }}</p>
         <h1>{{ booking.event_type }}</h1>
         <p class="detail-lede">{{ booking.details|default:"A new story waiting to be made." }}</p>
         <div class="detail-facts">
@@ -15,13 +15,16 @@
     </div>
     <aside class="detail-side">
         <span class="status status-{{ booking.status }}">{{ booking.get_status_display }}</span>
-        <div class="price-block"><span>Quoted total</span><strong>KES {{ booking.quoted_price|floatformat:0 }}</strong><small>Deposit: KES {{ booking.deposit_amount|floatformat:0 }} · Balance: KES {{ booking.balance|floatformat:0 }}</small></div>
+        <div class="price-block"><span>Quoted total</span><strong>KES {{ booking.quoted_price|floatformat:0 }}</strong><small>Reservation fee (20%): KES {{ booking.reservation_fee|floatformat:0 }} · Remaining balance: KES {{ booking.balance|floatformat:0 }}</small></div>
+        <div class="escrow-note"><strong>{% if booking.reservation_status == 'held' %}Reservation held in escrow{% elif booking.reservation_status == 'released' %}Reservation released{% elif booking.reservation_status == 'refunded' %}Reservation refunded{% else %}Reservation fee not paid{% endif %}</strong><small>{% if booking.reservation_status == 'held' %}It stays protected until you confirm the photographer has arrived.{% elif booking.reservation_status == 'released' %}You confirmed arrival; the photographer can now complete the work.{% elif booking.reservation_status == 'due' %}Pay the reservation fee to secure this date.{% endif %}</small></div>
         <a href="{% url 'invoice_detail' booking.pk %}" class="text-link detail-invoice-link">View invoice <span aria-hidden="true">→</span></a>
         {% if request.user == booking.client and booking.status == 'pending' %}<a href="{% url 'booking_update' booking.pk %}" class="button button-secondary button-full">Edit request <span aria-hidden="true">↗</span></a>{% endif %}
-        {% if request.user == booking.client and booking.balance and booking.status != 'cancelled' %}<a href="{% url 'payment_start' booking.pk %}" class="button button-primary button-full">Pay balance <span aria-hidden="true">↗</span></a>{% endif %}
-        {% if request.user == booking.client or request.user == booking.photographer %}{% if booking.status == 'pending' or booking.status == 'confirmed' %}<form method="post" action="{% url 'booking_cancel' booking.pk %}" class="detail-action-form">{% csrf_token %}<button class="button button-quiet button-full" type="submit">Cancel booking</button></form>{% endif %}{% endif %}
-        {% if request.user == booking.photographer and booking.status == 'pending' %}<form method="post" action="{% url 'booking_status_update' booking.pk %}" class="detail-action-form">{% csrf_token %}<input type="hidden" name="status" value="confirmed"><button class="button button-primary button-full" type="submit">Confirm booking <span aria-hidden="true">↗</span></button></form>{% endif %}
-        {% if request.user == booking.photographer and booking.status == 'confirmed' %}<form method="post" action="{% url 'booking_status_update' booking.pk %}" class="detail-action-form">{% csrf_token %}<input type="hidden" name="status" value="completed"><button class="button button-primary button-full" type="submit">Mark completed <span aria-hidden="true">↗</span></button></form>{% endif %}
+        {% if request.user == booking.client and booking.status == 'reservation_due' %}<a href="{% url 'payment_reservation' booking.pk %}" class="button button-primary button-full">Pay reservation fee <span aria-hidden="true">↗</span></a>{% endif %}
+        {% if request.user == booking.client and booking.status == 'reserved' %}<form method="post" action="{% url 'booking_confirm_arrival' booking.pk %}" class="detail-action-form">{% csrf_token %}<button class="button button-primary button-full" type="submit">Confirm photographer has arrived <span aria-hidden="true">↗</span></button></form>{% endif %}
+        {% if request.user == booking.client and booking.status == 'balance_due' %}<a href="{% url 'payment_balance' booking.pk %}" class="button button-primary button-full">Pay remaining balance <span aria-hidden="true">↗</span></a>{% endif %}
+        {% if request.user == booking.client or request.user == booking.photographer %}{% if booking.status == 'pending' or booking.status == 'reservation_due' %}<form method="post" action="{% url 'booking_cancel' booking.pk %}" class="detail-action-form">{% csrf_token %}<button class="button button-quiet button-full" type="submit">Cancel booking</button></form>{% endif %}{% endif %}
+        {% if request.user == booking.photographer and booking.status == 'pending' %}<form method="post" action="{% url 'booking_status_update' booking.pk %}" class="detail-action-form">{% csrf_token %}<input type="hidden" name="status" value="reservation_due"><button class="button button-primary button-full" type="submit">Accept & request reservation fee <span aria-hidden="true">↗</span></button></form>{% endif %}
+        {% if request.user == booking.photographer and booking.status == 'arrival_confirmed' %}<form method="post" action="{% url 'booking_status_update' booking.pk %}" class="detail-action-form">{% csrf_token %}<input type="hidden" name="status" value="balance_due"><button class="button button-primary button-full" type="submit">Mark work as finished <span aria-hidden="true">↗</span></button></form>{% endif %}
         {% if request.user == booking.client and booking.status == 'completed' and not booking.review %}<a href="{% url 'review_create' booking.pk %}" class="button button-secondary button-full">Leave a review <span aria-hidden="true">→</span></a>{% endif %}
     </aside>
 </section>

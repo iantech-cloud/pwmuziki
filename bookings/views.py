@@ -1,9 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from .forms import AvailabilityForm, BookingForm, BookingStatusForm
-from .models import Availability, Booking, BookingStatus
+from .models import Availability, Booking, BookingStatus, ReservationStatus
 from .services import create_booking
+from payments.domain import create_payout
+from payments.models import Transaction
 
 @login_required
 def booking_list(request):
@@ -17,8 +20,14 @@ def booking_create(request):
         return redirect('booking_list')
     form = BookingForm(request.POST or None, user=request.user)
     if request.method == 'POST' and form.is_valid():
+        service_type = form.cleaned_data['service_type']
         try:
-            create_booking(client=request.user, **form.cleaned_data)
+            create_booking(
+                client=request.user,
+                event_type=service_type.name,
+                quoted_price=service_type.suggested_price,
+                **form.cleaned_data,
+            )
         except ValueError as exc:
             form.add_error(None, str(exc))
         else:
@@ -41,7 +50,11 @@ def booking_cancel(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
     if request.user not in (booking.client, booking.photographer):
         raise PermissionDenied
-    if request.method == 'POST' and booking.status in (BookingStatus.PENDING, BookingStatus.CONFIRMED):
+    if request.method == 'POST' and booking.status in (
+        BookingStatus.PENDING,
+        BookingStatus.RESERVATION_DUE,
+        BookingStatus.CONFIRMED,
+    ):
         booking.status = BookingStatus.CANCELLED
         booking.save(update_fields=['status', 'updated_at'])
     return redirect('booking_detail', pk=booking.pk)
@@ -55,12 +68,16 @@ def booking_status_update(request, pk):
         if form.is_valid():
             next_status = form.cleaned_data['status']
             allowed = {
-                BookingStatus.PENDING: {'confirmed', 'cancelled'},
-                BookingStatus.CONFIRMED: {'completed', 'cancelled'},
+                BookingStatus.PENDING: {BookingStatus.RESERVATION_DUE, BookingStatus.CANCELLED},
+                BookingStatus.ARRIVAL_CONFIRMED: {BookingStatus.BALANCE_DUE},
             }
             if next_status in allowed.get(booking.status, set()):
                 booking.status = next_status
-                booking.save(update_fields=['status', 'updated_at'])
+                if next_status == BookingStatus.BALANCE_DUE:
+                    booking.work_completed_at = timezone.now()
+                    booking.save(update_fields=['status', 'work_completed_at', 'updated_at'])
+                else:
+                    booking.save(update_fields=['status', 'updated_at'])
     return redirect('booking_detail', pk=booking.pk)
 
 
@@ -94,7 +111,25 @@ def availability_toggle(request, pk):
 
 @login_required
 def booking_detail(request, pk):
-    booking = get_object_or_404(Booking.objects.select_related('client', 'photographer'), pk=pk)
+    booking = get_object_or_404(Booking.objects.select_related('client', 'photographer', 'service_type'), pk=pk)
     if request.user != booking.client and request.user != booking.photographer:
         raise PermissionDenied
     return render(request, 'bookings/detail.html', {'booking': booking})
+
+
+@login_required
+def booking_confirm_arrival(request, pk):
+    booking = get_object_or_404(Booking, pk=pk, client=request.user)
+    if request.method == 'POST' and booking.status == BookingStatus.RESERVED:
+        booking.status = BookingStatus.ARRIVAL_CONFIRMED
+        booking.reservation_status = ReservationStatus.RELEASED
+        booking.arrival_confirmed_at = timezone.now()
+        booking.save(update_fields=('status', 'reservation_status', 'arrival_confirmed_at', 'updated_at'))
+        reservation_payment = Transaction.objects.filter(
+            invoice__booking=booking,
+            purpose=Transaction.Purpose.RESERVATION,
+            status=Transaction.Status.SUCCESS,
+        ).first()
+        if reservation_payment:
+            create_payout(payment=reservation_payment)
+    return redirect('booking_detail', pk=booking.pk)
