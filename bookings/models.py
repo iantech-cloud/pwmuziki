@@ -77,6 +77,9 @@ class Booking(models.Model):
     arrival_confirmed_at = models.DateTimeField(null=True, blank=True)
     work_completed_at = models.DateTimeField(null=True, blank=True)
     balance_paid_at = models.DateTimeField(null=True, blank=True)
+    google_drive_url = models.URLField(blank=True)
+    delivery_note = models.TextField(blank=True)
+    delivery_ready_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:

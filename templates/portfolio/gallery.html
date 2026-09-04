@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Featured gallery | Pwmuziki{% endblock %}
+{% block content %}
+<section class="page-heading gallery-heading">
+    <div><p class="eyebrow">The gallery</p><h1>Work worth<br><em>remembering.</em></h1><p class="page-lede">A moving wall of the photographs our community is proudest to make.</p></div>
+    <p class="section-aside">Selected by<br>the Pwmuziki team</p>
+</section>
+<div class="gallery-grid">
+    {% for photo in photos %}
+    <figure class="gallery-card">
+        <div class="gallery-image"><img src="{{ photo.display_image.url }}" alt="{{ photo.caption|default:photo.album.title }}" loading="lazy"><span class="brand-overlay"><b>P</b> pwmuziki</span></div>
+        <figcaption><strong>{{ photo.caption|default:photo.album.title }}</strong><a href="{% url 'photographer_detail' photo.album.photographer.pk %}">{{ photo.album.photographer.profile.display_name }} ↗</a></figcaption>
+    </figure>
+    {% empty %}
+    <div class="empty-state gallery-empty"><span class="empty-stamp">P</span><h2>The gallery is taking shape.</h2><p>Our photographers are choosing the work they want to put forward.</p></div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -10,8 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from bookings.models import Booking, BookingStatus, ReservationStatus
-from .models import Invoice, Transaction
-from .domain import create_payout
+from .models import Invoice, Payout, Transaction
+from .domain import create_payout, dispatch_payout
 from .services import initiate_stk_push
 
 
@@ -127,8 +127,17 @@ def mpesa_callback(request):
         return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback acknowledged'})
 
     transaction.raw_response = payload
-    if str(callback.get('ResultCode')) == '0':
+    if transaction.status == Transaction.Status.SUCCESS:
+        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback already processed'})
+    metadata = {
+        item.get('Name'): item.get('Value')
+        for item in callback.get('CallbackMetadata', {}).get('Item', [])
+        if item.get('Name')
+    }
+    amount_matches = metadata.get('Amount') is None or Decimal(str(metadata['Amount'])) == transaction.amount
+    if str(callback.get('ResultCode')) == '0' and amount_matches:
         transaction.status = Transaction.Status.SUCCESS
+        transaction.receipt_number = str(metadata.get('MpesaReceiptNumber') or '')
         invoice = transaction.invoice
         if transaction.purpose == Transaction.Purpose.RESERVATION:
             invoice.reservation_paid = True
@@ -149,8 +158,43 @@ def mpesa_callback(request):
             booking.balance_paid_at = timezone.now()
             booking.status = BookingStatus.COMPLETED
             booking.save(update_fields=('balance_paid_at', 'status', 'updated_at'))
-            create_payout(payment=transaction)
+            dispatch_payout(payout=create_payout(payment=transaction))
     else:
         transaction.status = Transaction.Status.FAILED
-    transaction.save(update_fields=['status', 'raw_response'])
+        if str(callback.get('ResultCode')) == '0' and not amount_matches:
+            transaction.raw_response = {**payload, 'validation_error': 'Callback amount did not match the initiated transaction.'}
+    transaction.save(update_fields=['status', 'raw_response', 'receipt_number'])
     return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback processed'})
+
+
+@csrf_exempt
+@require_POST
+def mpesa_b2c_result(request):
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+        result = payload['Result']
+    except (ValueError, KeyError, TypeError):
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Invalid B2C result payload'}, status=400)
+    reference = result.get('ConversationID') or result.get('OriginatorConversationID')
+    payout = Payout.objects.filter(provider_reference=reference).first()
+    if not payout:
+        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Result acknowledged'})
+    if payout.status == Payout.Status.PAID:
+        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Result already processed'})
+    payout.raw_response = payload
+    if str(result.get('ResultCode')) == '0':
+        payout.status = Payout.Status.PAID
+        payout.paid_at = timezone.now()
+        payout.failure_reason = ''
+        payout.save(update_fields=['status', 'paid_at', 'failure_reason', 'raw_response'])
+    else:
+        payout.status = Payout.Status.FAILED
+        payout.failure_reason = result.get('ResultDesc', 'Daraja payout failed.')
+        payout.save(update_fields=['status', 'failure_reason', 'raw_response'])
+    return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Result processed'})
+
+
+@csrf_exempt
+@require_POST
+def mpesa_b2c_timeout(request):
+    return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Timeout acknowledged'})

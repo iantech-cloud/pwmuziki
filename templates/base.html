@@ -22,6 +22,7 @@
             </button>
             <div class="nav-links" id="navLinks">
                 <a href="{% url 'home' %}">Explore</a>
+                <a href="{% url 'gallery' %}">Gallery</a>
                 {% if user.is_authenticated %}
                     <a href="{% url 'booking_list' %}">My bookings</a>
                     <a href="{% url 'dashboard' %}">Dashboard</a>

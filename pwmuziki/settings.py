@@ -1,8 +1,10 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -152,6 +154,23 @@ MPESA_STK_URL = os.environ.get(
 MPESA_TRANSACTION_TYPE = os.environ.get('MPESA_TRANSACTION_TYPE', 'CustomerPayBillOnline')
 MPESA_PARTY_B = os.environ.get('MPESA_PARTY_B', MPESA_SHORTCODE)
 MPESA_ACCOUNT_REFERENCE = os.environ.get('MPESA_ACCOUNT_REFERENCE', 'Pwmuziki')
+MPESA_QUERY_URL = os.environ.get(
+    'MPESA_QUERY_URL',
+    'https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query'
+    if MPESA_ENVIRONMENT == 'production'
+    else 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query',
+)
+MPESA_B2C_URL = os.environ.get(
+    'MPESA_B2C_URL',
+    'https://api.safaricom.co.ke/mpesa/b2c/v3/paymentrequest'
+    if MPESA_ENVIRONMENT == 'production'
+    else 'https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest',
+)
+MPESA_B2C_COMMAND_ID = os.environ.get('MPESA_B2C_COMMAND_ID', 'BusinessPayment')
+MPESA_B2C_INITIATOR_NAME = os.environ.get('MPESA_B2C_INITIATOR_NAME', '')
+MPESA_B2C_SECURITY_CREDENTIAL = os.environ.get('MPESA_B2C_SECURITY_CREDENTIAL', '')
+MPESA_B2C_RESULT_URL = os.environ.get('MPESA_B2C_RESULT_URL', '')
+MPESA_B2C_TIMEOUT_URL = os.environ.get('MPESA_B2C_TIMEOUT_URL', '')
 
 
 # Email

@@ -6,7 +6,7 @@ from .models import Album, Category, Photo
 class PhotoInline(admin.TabularInline):
     model = Photo
     extra = 0
-    fields = ('image', 'caption', 'is_preview', 'watermark_text', 'licensing_info', 'uploaded_at')
+    fields = ('image', 'branded_image', 'caption', 'is_preview', 'is_featured', 'watermark_text', 'licensing_info', 'uploaded_at')
     readonly_fields = ('uploaded_at',)
 
 
@@ -38,8 +38,8 @@ class AlbumAdmin(admin.ModelAdmin):
 
 @admin.register(Photo)
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('thumbnail_name', 'album', 'is_preview', 'uploaded_at')
-    list_filter = ('is_preview', 'uploaded_at', 'album__is_public')
+    list_display = ('thumbnail_name', 'album', 'is_featured', 'is_preview', 'uploaded_at')
+    list_filter = ('is_featured', 'is_preview', 'uploaded_at', 'album__is_public')
     search_fields = ('caption', 'watermark_text', 'licensing_info', 'album__title', 'album__photographer__username')
     autocomplete_fields = ('album',)
     readonly_fields = ('uploaded_at',)

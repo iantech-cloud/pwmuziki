@@ -26,6 +26,7 @@ class Transaction(models.Model):
     payer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     provider = models.CharField(max_length=30, default='mpesa')
     provider_reference = models.CharField(max_length=120, blank=True, unique=True, null=True)
+    receipt_number = models.CharField(max_length=80, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     purpose = models.CharField(max_length=20, choices=Purpose.choices, default=Purpose.RESERVATION)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.INITIATED)
@@ -60,6 +61,7 @@ class Refund(models.Model):
 class Payout(models.Model):
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pending'
+        PROCESSING = 'processing', 'Processing'
         PAID = 'paid', 'Paid'
         FAILED = 'failed', 'Failed'
 
@@ -68,4 +70,8 @@ class Payout(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     provider_reference = models.CharField(max_length=120, blank=True)
+    failure_reason = models.TextField(blank=True)
+    raw_response = models.JSONField(default=dict, blank=True)
+    requested_at = models.DateTimeField(null=True, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,0 +1,24 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iantech-cloud/pwmuziki.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/iantech-cloud/pwmuziki/issues"
+  },
+  "homepage": "https://github.com/iantech-cloud/pwmuziki#readme",
+  "dependencies": {
+    "@replit/connectors-sdk": "^0.4.3"
+  }
+}

@@ -5,7 +5,7 @@ from django.utils import timezone
 from .forms import AvailabilityForm, BookingForm, BookingStatusForm
 from .models import Availability, Booking, BookingStatus, ReservationStatus, ServiceType
 from .services import create_booking
-from payments.domain import create_payout
+from payments.domain import create_payout, dispatch_payout
 from payments.models import Transaction
 
 @login_required
@@ -140,5 +140,5 @@ def booking_confirm_arrival(request, pk):
             status=Transaction.Status.SUCCESS,
         ).first()
         if reservation_payment:
-            create_payout(payment=reservation_payment)
+            dispatch_payout(payout=create_payout(payment=reservation_payment))
     return redirect('booking_detail', pk=booking.pk)

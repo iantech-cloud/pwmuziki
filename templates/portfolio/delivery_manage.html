@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Deliver {{ booking.event_type }} | Pwmuziki{% endblock %}
+{% block content %}
+<div class="detail-back"><a href="{% url 'booking_detail' booking.pk %}" class="text-link">← Back to booking</a></div>
+<section class="page-heading"><div><p class="eyebrow">Client delivery</p><h1>Finish the<br><em>story.</em></h1><p class="page-lede">Upload watermarked previews here, then add the private Google Drive folder that becomes visible after final payment.</p></div></section>
+<div class="delivery-layout">
+    <div class="form-card">
+        <h2>Private gallery link</h2>
+        <p class="form-help">The client will not see this link until the balance payment is confirmed by Daraja.</p>
+        <form method="post" class="site-form">
+            {% csrf_token %}
+            {% for field in settings_form %}<div class="form-field{% if field.errors %} has-error{% endif %}">{{ field.label_tag }}{{ field }}{% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}
+            <button class="button button-primary" type="submit" name="save_delivery">Save private link <span aria-hidden="true">↗</span></button>
+        </form>
+    </div>
+    <div class="form-card">
+        <h2>Watermarked previews</h2>
+        <p class="form-help">These previews are branded automatically and remain visible while the balance is due.</p>
+        <form method="post" enctype="multipart/form-data" class="site-form">
+            {% csrf_token %}
+            {% for field in photo_form %}<div class="form-field{% if field.errors %} has-error{% endif %}">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}
+            <button class="button button-secondary" type="submit" name="upload_preview">Upload preview <span aria-hidden="true">↗</span></button>
+        </form>
+    </div>
+</div>
+{% if delivery_photos %}
+<section class="section delivery-preview-section"><div class="section-heading compact"><div><p class="eyebrow">Preview roll</p><h2>{{ delivery_photos|length }} preview{{ delivery_photos|length|pluralize }}</h2></div></div><div class="photo-grid">{% for photo in delivery_photos %}<figure class="photo-item"><div class="watermarked-preview"><img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Client preview' }}"><span class="brand-overlay"><b>P</b> pwmuziki</span></div>{% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}</figure>{% endfor %}</div></section>
+{% endif %}
+{% endblock %}
