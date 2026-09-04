@@ -1,1 +1,0 @@
-- [Django 6.1 email settings](django-email-settings.md) — use the new MAILERS configuration without also defining legacy EMAIL_BACKEND.
