@@ -54,8 +54,8 @@ class BookingAdmin(admin.ModelAdmin):
     actions = (confirm_bookings, complete_bookings, cancel_bookings)
     fieldsets = (
         ('People', {'fields': ('client', 'photographer')}),
-        ('Event', {'fields': ('service_type', 'event_type', 'event_date', 'location', 'details')}),
-        ('Commercial', {'fields': ('quoted_price', 'reservation_fee', 'deposit_amount', 'balance', 'status', 'reservation_status')}),
+        ('Event', {'fields': ('service_type', 'event_type', 'photo_count', 'event_date', 'location', 'details')}),
+        ('Commercial', {'fields': ('quoted_price', 'reservation_fee', 'balance', 'status', 'reservation_status')}),
         ('Milestones', {'fields': ('reservation_paid_at', 'arrival_confirmed_at', 'work_completed_at', 'balance_paid_at'), 'classes': ('collapse',)}),
         ('Audit', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
     )
@@ -67,7 +67,7 @@ class BookingAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceType)
 class ServiceTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'suggested_price', 'is_active', 'sort_order')
+    list_display = ('name', 'pricing_model', 'minimum_price', 'maximum_price', 'unit_label', 'is_active', 'sort_order')
     list_filter = ('is_active',)
     search_fields = ('name', 'description')
     prepopulated_fields = {'slug': ('name',)}

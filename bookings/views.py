@@ -3,7 +3,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from .forms import AvailabilityForm, BookingForm, BookingStatusForm
-from .models import Availability, Booking, BookingStatus, ReservationStatus
+from .models import Availability, Booking, BookingStatus, ReservationStatus, ServiceType
 from .services import create_booking
 from payments.domain import create_payout
 from payments.models import Transaction
@@ -21,11 +21,16 @@ def booking_create(request):
     form = BookingForm(request.POST or None, user=request.user)
     if request.method == 'POST' and form.is_valid():
         service_type = form.cleaned_data['service_type']
+        quote = (
+            service_type.minimum_price * form.cleaned_data['photo_count']
+            if service_type.pricing_model == ServiceType.PricingModel.PER_PHOTO
+            else 0
+        )
         try:
             create_booking(
                 client=request.user,
                 event_type=service_type.name,
-                quoted_price=service_type.suggested_price,
+                quoted_price=quote,
                 **form.cleaned_data,
             )
         except ValueError as exc:
@@ -64,7 +69,7 @@ def booking_cancel(request, pk):
 def booking_status_update(request, pk):
     booking = get_object_or_404(Booking, pk=pk, photographer=request.user)
     if request.method == 'POST':
-        form = BookingStatusForm(request.POST)
+        form = BookingStatusForm(request.POST, booking=booking)
         if form.is_valid():
             next_status = form.cleaned_data['status']
             allowed = {
@@ -73,7 +78,11 @@ def booking_status_update(request, pk):
             }
             if next_status in allowed.get(booking.status, set()):
                 booking.status = next_status
-                if next_status == BookingStatus.BALANCE_DUE:
+                if next_status == BookingStatus.RESERVATION_DUE:
+                    booking.quoted_price = form.cleaned_data['quoted_price']
+                    booking.reservation_status = ReservationStatus.DUE
+                    booking.save(update_fields=['status', 'quoted_price', 'reservation_fee', 'reservation_status', 'updated_at'])
+                elif next_status == BookingStatus.BALANCE_DUE:
                     booking.work_completed_at = timezone.now()
                     booking.save(update_fields=['status', 'work_completed_at', 'updated_at'])
                 else:

@@ -157,6 +157,12 @@ h3 { font-size: 19px; }
 .escrow-note { display: grid; gap: 5px; margin: 18px 0; padding: 14px; border-left: 2px solid var(--sage); background: #eef2e9; color: var(--ink); }
 .escrow-note strong { font: 12px var(--mono); letter-spacing: .03em; text-transform: uppercase; }
 .escrow-note small { color: var(--muted); line-height: 1.55; }
+.quote-guidance { display: flex; justify-content: space-between; gap: 15px; margin: 14px 0; padding: 11px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+.quote-guidance strong { color: var(--ink); font-weight: 600; }
+.quote-form { display: grid; gap: 8px; margin-top: 16px; }
+.quote-form label { color: var(--muted); font: 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.quote-form input { width: 100%; padding: 11px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
+.quote-form small { color: var(--muted); line-height: 1.45; }
 .invoice-breakdown { display: grid; gap: 0; margin: 25px 0 0; border-top: 1px solid var(--line); }
 .invoice-breakdown > div { display: flex; justify-content: space-between; gap: 20px; padding: 13px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .invoice-breakdown strong { color: var(--ink); font-weight: 600; }

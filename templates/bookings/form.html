@@ -2,7 +2,7 @@
 {% block title %}Request a booking | Pwmuziki{% endblock %}
 {% block content %}
 <section class="form-layout">
-    <div class="form-intro"><p class="eyebrow">{% if booking %}Adjust the plan{% else %}Make a plan{% endif %}</p><h1>{% if booking %}Keep it<br><em>feeling right.</em>{% else %}Start with<br><em>the feeling.</em>{% endif %}</h1><p>Choose the kind of work you need. Each service has a suggested quote; your 20% reservation fee is calculated automatically when the request is sent.</p></div>
+    <div class="form-intro"><p class="eyebrow">{% if booking %}Adjust the plan{% else %}Make a plan{% endif %}</p><h1>{% if booking %}Keep it<br><em>feeling right.</em>{% else %}Start with<br><em>the feeling.</em>{% endif %}</h1><p>Choose a service and share the scope. Per-photo work is calculated from the number of photos; other services receive a quote from the photographer before any reservation fee is due.</p></div>
     <div class="form-card">
         <form method="post" class="site-form">
             {% csrf_token %}
