@@ -82,3 +82,4 @@ $RECYCLE.BIN/
 !.vscode/*.code-snippets
 .history/
 *.vsix
+db.sqlite3
