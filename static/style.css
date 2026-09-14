@@ -219,7 +219,11 @@ h3 { font-size: 19px; }
 .workspace-message { display: grid; gap: 7px; margin-top: 18px; padding: 16px; background: var(--paper-deep); }
 .workspace-message strong { font-size: 13px; }
 .workspace-message small { color: var(--muted); font-size: 11px; }
-.workspace-message .text-link { margin-top: 5px; }
+  .workspace-message .text-link { margin-top: 5px; }
+  .dashboard-message-form { display: grid; gap: 8px; margin-top: 8px; }
+  .dashboard-message-form textarea { width: 100%; min-height: 64px; resize: vertical; border: 1px solid var(--line); background: var(--paper); padding: 10px; font: inherit; font-size: 13px; color: var(--ink); }
+  .dashboard-message-form .button { justify-self: start; }
+
 
 /* Forms and detail pages */
 .form-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 105px; max-width: 980px; margin: 64px auto 0; }
