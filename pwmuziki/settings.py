@@ -18,12 +18,15 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = [
     'pwmuziki.vercel.app',
+    '.vercel.app',
     '127.0.0.1',
     'localhost',
     '0.0.0.0',
 ]
-if os.environ.get('REPLIT_DEV_DOMAIN'):
-    ALLOWED_HOSTS.append(os.environ['REPLIT_DEV_DOMAIN'])
+for host_variable in ('REPLIT_DEV_DOMAIN', 'VERCEL_URL'):
+    host = os.environ.get(host_variable)
+    if host:
+        ALLOWED_HOSTS.append(host.split('://', 1)[-1].split('/', 1)[0])
 
 
 # Application definition
