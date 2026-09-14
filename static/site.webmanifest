@@ -1,0 +1,14 @@
+{
+  "name": "Pwmuziki — photographs with feeling",
+  "short_name": "Pwmuziki",
+  "description": "Find photographers whose work feels like you.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5efe7",
+  "theme_color": "#b85c3f",
+  "icons": [
+    { "src": "/static/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

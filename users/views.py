@@ -33,6 +33,8 @@ def _register(request, initial_role=None):
     form = RegistrationForm(request.POST or None, initial_role=initial_role)
     if request.method == 'POST' and form.is_valid():
         user = form.save()
+        from .email_utils import send_welcome_email
+        send_welcome_email(user)
         login(request, user)
         return redirect('dashboard')
     role = form['role'].value()

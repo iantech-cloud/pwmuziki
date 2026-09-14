@@ -5,7 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Pwmuziki connects you with photographers whose work feels like you.">
+    <meta name="theme-color" content="#f5efe7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}">
     <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{% static 'favicon.svg' %}">
     <title>{% block title %}Pwmuziki — photographs with feeling{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'style.css' %}">
     {% block extra_css %}{% endblock %}
@@ -14,8 +19,7 @@
     <header class="site-header">
         <nav class="navbar shell" aria-label="Main navigation">
             <a href="{% url 'home' %}" class="logo" aria-label="Pwmuziki home">
-                <span class="logo-mark">P</span>
-                <span class="logo-word">pwmuziki</span>
+                <img src="{% static 'logo.svg' %}" alt="Pwmuziki" width="156" height="38">
             </a>
             <button class="mobile-menu" onclick="toggleMenu()" aria-label="Toggle navigation" aria-expanded="false">
                 <span></span><span></span><span></span>
@@ -26,7 +30,10 @@
                 {% if user.is_authenticated %}
                     <a href="{% url 'booking_list' %}">My bookings</a>
                     <a href="{% url 'dashboard' %}">Dashboard</a>
-                    <a href="{% url 'logout' %}" class="nav-muted">Log out</a>
+                    <form method="post" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-muted nav-logout">Log out</button>
+                    </form>
                 {% else %}
                     <a href="{% url 'login' %}">Log in</a>
                     <a href="{% url 'register' %}" class="nav-join">Join us</a>
@@ -47,7 +54,7 @@
     <footer class="site-footer">
         <div class="shell footer-content">
             <div class="footer-brand">
-                <a href="{% url 'home' %}" class="logo"><span class="logo-mark">P</span><span class="logo-word">pwmuziki</span></a>
+                <a href="{% url 'home' %}" class="logo" aria-label="Pwmuziki home"><img src="{% static 'logo.svg' %}" alt="Pwmuziki" width="156" height="38"></a>
                 <p>Photography for the moments<br>you want to keep close.</p>
             </div>
             <div class="footer-note">
