@@ -185,6 +185,5 @@ EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 SERVER_EMAIL = os.environ.get('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 EMAIL_TIMEOUT = 20
-MAILERS = {'default': {'BACKEND': EMAIL_BACKEND}}
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000').rstrip('/')
 BRAND_NAME = 'Pwmuziki'
