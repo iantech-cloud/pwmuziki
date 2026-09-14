@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import Profile, User
+from .models import ClientNote, Message, Profile, User
 
 class RegistrationForm(UserCreationForm):
     email = forms.EmailField()
@@ -63,3 +63,17 @@ class ProfileForm(forms.ModelForm):
         if commit:
             profile.save()
         return profile
+
+
+class ClientNoteForm(forms.ModelForm):
+    class Meta:
+        model = ClientNote
+        fields = ('client', 'body', 'status', 'tags')
+        widgets = {'body': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Add a useful client note...'})}
+
+
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ('body',)
+        widgets = {'body': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Write a message...'})}

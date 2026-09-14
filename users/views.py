@@ -5,8 +5,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Avg, Prefetch
 from django.utils import timezone
 from reviews.models import Review
-from .forms import ProfileForm, RegistrationForm
-from .models import Profile, User
+from .forms import ClientNoteForm, MessageForm, ProfileForm, RegistrationForm
+from .models import ClientNote, Contract, GalleryAccess, MessageThread, Profile, StudioSettings, User
 from portfolio.models import Album, Photo
 
 
@@ -89,7 +89,8 @@ def dashboard(request):
         if request.user.role == User.Role.CLIENT
         else request.user.photographer_bookings.all()
     ).select_related('client', 'photographer')
-    context = {'bookings': bookings[:8], 'profile': Profile.ensure_for(request.user)}
+    profile = Profile.ensure_for(request.user)
+    context = {'bookings': bookings[:8], 'profile': profile}
     today = timezone.localdate()
     context['upcoming_count'] = bookings.filter(event_date__gte=today).exclude(status='cancelled').count()
     if request.user.role == User.Role.PHOTOGRAPHER:
@@ -97,10 +98,50 @@ def dashboard(request):
         context['pending_count'] = bookings.filter(status='pending').count()
         context['confirmed_count'] = bookings.filter(status__in=['reservation_due', 'reserved', 'arrival_confirmed', 'balance_due']).count()
         context['published_count'] = Album.objects.filter(photographer=request.user, is_public=True).count()
+        context['client_count'] = bookings.values('client_id').distinct().count()
+        context['notes'] = ClientNote.objects.filter(photographer=request.user).select_related('client__profile')[:5]
+        context['gallery_count'] = GalleryAccess.objects.filter(album__photographer=request.user).count()
+        context['contract_count'] = Contract.objects.filter(booking__photographer=request.user).count()
+        context['threads'] = MessageThread.objects.filter(photographer=request.user).select_related('client__profile')[:5]
+        context['studio_settings'] = StudioSettings.objects.filter(photographer=request.user).first()
     else:
         context['awaiting_count'] = bookings.filter(status='pending').count()
         context['balance_due'] = sum((booking.balance for booking in bookings.filter(status='balance_due')), 0)
+        context['galleries'] = GalleryAccess.objects.filter(client=request.user).select_related('album', 'album__photographer__profile')[:5]
+        context['contracts'] = Contract.objects.filter(booking__client=request.user).select_related('booking')[:5]
+        context['threads'] = MessageThread.objects.filter(client=request.user).select_related('photographer__profile')[:5]
     return render(request, 'dashboard.html', context)
+
+
+@login_required
+def create_client_note(request):
+    if request.user.role != User.Role.PHOTOGRAPHER:
+        return redirect('dashboard')
+    form = ClientNoteForm(request.POST or None)
+    form.fields['client'].queryset = User.objects.filter(client_bookings__photographer=request.user).distinct()
+    if request.method == 'POST' and form.is_valid():
+        note = form.save(commit=False)
+        note.photographer = request.user
+        note.save()
+        return redirect('dashboard')
+    return render(request, 'dashboard_action.html', {'form': form, 'eyebrow': 'Client management', 'heading': 'Add a client note.', 'submit_label': 'Save note'})
+
+
+@login_required
+def send_message(request, thread_id=None):
+    if request.method != 'POST':
+        return redirect('dashboard')
+    thread = get_object_or_404(MessageThread, pk=thread_id)
+    if request.user not in (thread.client, thread.photographer):
+        return redirect('dashboard')
+    form = MessageForm(request.POST)
+    if form.is_valid():
+        message = form.save(commit=False)
+        message.thread = thread
+        message.sender = request.user
+        message.save()
+        MessageThread.objects.filter(pk=thread.pk).update(updated_at=timezone.now())
+    return redirect('dashboard')
 
 
 @login_required
