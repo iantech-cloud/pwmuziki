@@ -38,6 +38,8 @@ button, input, select, textarea { font: inherit; }
 .nav-links .nav-join { padding: 11px 16px; background: var(--ink); color: var(--white); }
 .nav-links .nav-join:hover { background: var(--rust); color: var(--white); }
 .nav-muted { color: var(--muted); }
+.nav-logout { border: 0; padding: 0; background: transparent; cursor: pointer; }
+.nav-logout:hover, .nav-logout:focus-visible { color: var(--ink); }
 .mobile-menu { display: none; border: 0; background: none; cursor: pointer; }
 .mobile-menu span { display: block; width: 23px; height: 1px; margin: 5px 0; background: var(--ink); }
 

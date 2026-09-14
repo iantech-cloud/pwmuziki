@@ -30,7 +30,10 @@
                 {% if user.is_authenticated %}
                     <a href="{% url 'booking_list' %}">My bookings</a>
                     <a href="{% url 'dashboard' %}">Dashboard</a>
-                    <a href="{% url 'logout' %}" class="nav-muted">Log out</a>
+                    <form method="post" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-muted nav-logout">Log out</button>
+                    </form>
                 {% else %}
                     <a href="{% url 'login' %}">Log in</a>
                     <a href="{% url 'register' %}" class="nav-join">Join us</a>
