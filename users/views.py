@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Avg, Prefetch
 from django.utils import timezone
 from reviews.models import Review
-from .forms import ProfileForm, RegistrationForm
+from .forms import ClientNoteForm, MessageForm, ProfileForm, RegistrationForm
 from .models import ClientNote, Contract, GalleryAccess, MessageThread, Profile, StudioSettings, User
 from portfolio.models import Album, Photo
 
@@ -111,6 +111,37 @@ def dashboard(request):
         context['contracts'] = Contract.objects.filter(booking__client=request.user).select_related('booking')[:5]
         context['threads'] = MessageThread.objects.filter(client=request.user).select_related('photographer__profile')[:5]
     return render(request, 'dashboard.html', context)
+
+
+@login_required
+def create_client_note(request):
+    if request.user.role != User.Role.PHOTOGRAPHER:
+        return redirect('dashboard')
+    form = ClientNoteForm(request.POST or None)
+    form.fields['client'].queryset = User.objects.filter(client_bookings__photographer=request.user).distinct()
+    if request.method == 'POST' and form.is_valid():
+        note = form.save(commit=False)
+        note.photographer = request.user
+        note.save()
+        return redirect('dashboard')
+    return render(request, 'dashboard_action.html', {'form': form, 'eyebrow': 'Client management', 'heading': 'Add a client note.', 'submit_label': 'Save note'})
+
+
+@login_required
+def send_message(request, thread_id=None):
+    if request.method != 'POST':
+        return redirect('dashboard')
+    thread = get_object_or_404(MessageThread, pk=thread_id)
+    if request.user not in (thread.client, thread.photographer):
+        return redirect('dashboard')
+    form = MessageForm(request.POST)
+    if form.is_valid():
+        message = form.save(commit=False)
+        message.thread = thread
+        message.sender = request.user
+        message.save()
+        MessageThread.objects.filter(pk=thread.pk).update(updated_at=timezone.now())
+    return redirect('dashboard')
 
 
 @login_required
