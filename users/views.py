@@ -1,4 +1,5 @@
 from django.contrib.auth import login
+from django.contrib import messages
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -6,7 +7,7 @@ from django.db.models import Avg, Prefetch
 from django.utils import timezone
 from reviews.models import Review
 from .forms import ClientNoteForm, MessageForm, ProfileForm, RegistrationForm
-from .models import ClientNote, Contract, GalleryAccess, MessageThread, Profile, StudioSettings, User
+from .models import ClientNote, Contract, GalleryAccess, MessageThread, Notification, Profile, StudioSettings, User
 from portfolio.models import Album, Photo
 
 
@@ -90,7 +91,12 @@ def dashboard(request):
         else request.user.photographer_bookings.all()
     ).select_related('client', 'photographer')
     profile = Profile.ensure_for(request.user)
-    context = {'bookings': bookings[:8], 'profile': profile}
+    context = {
+        'bookings': bookings[:8],
+        'profile': profile,
+        'notifications': Notification.objects.filter(recipient=request.user)[:6],
+        'unread_notifications': Notification.objects.filter(recipient=request.user, is_read=False).count(),
+    }
     today = timezone.localdate()
     context['upcoming_count'] = bookings.filter(event_date__gte=today).exclude(status='cancelled').count()
     if request.user.role == User.Role.PHOTOGRAPHER:
@@ -141,6 +147,14 @@ def send_message(request, thread_id=None):
         message.sender = request.user
         message.save()
         MessageThread.objects.filter(pk=thread.pk).update(updated_at=timezone.now())
+    return redirect('dashboard')
+
+
+@login_required
+def mark_notifications_read(request):
+    if request.method == 'POST':
+        Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+        messages.success(request, 'Notifications marked as read.')
     return redirect('dashboard')
 
 
