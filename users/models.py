@@ -35,13 +35,23 @@ class ClientNote(models.Model):
 
 
 class GalleryAccess(models.Model):
+    class DownloadMode(models.TextChoices):
+        NONE = 'none', 'No downloads'
+        WEB = 'web', 'Web size'
+        FULL = 'full', 'Full resolution'
+
     album = models.OneToOneField('portfolio.Album', on_delete=models.CASCADE, related_name='client_access')
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='galleries')
     password = models.CharField(max_length=128, blank=True)
+    download_mode = models.CharField(max_length=10, choices=DownloadMode.choices, default=DownloadMode.NONE)
     allow_downloads = models.BooleanField(default=False)
     allow_favorites = models.BooleanField(default=True)
+    show_favorites = models.BooleanField(default=True)
+    watermark_enabled = models.BooleanField(default=True)
+    is_published = models.BooleanField(default=False)
     expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    published_at = models.DateTimeField(null=True, blank=True)
 
 
 class GalleryFavorite(models.Model):
@@ -96,6 +106,28 @@ class StudioSettings(models.Model):
     default_gallery_expiry_days = models.PositiveIntegerField(default=30)
     default_allow_downloads = models.BooleanField(default=False)
     email_notifications = models.BooleanField(default=True)
+
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=160)
+    body = models.CharField(max_length=255, blank=True)
+    link = models.CharField(max_length=255, blank=True)
+    kind = models.CharField(max_length=40, default='general')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class NotificationPreference(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_preferences')
+    email_enabled = models.BooleanField(default=True)
+    gallery_updates = models.BooleanField(default=True)
+    booking_updates = models.BooleanField(default=True)
+    payment_updates = models.BooleanField(default=True)
+    message_updates = models.BooleanField(default=True)
 
 
 class Profile(models.Model):

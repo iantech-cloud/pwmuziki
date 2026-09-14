@@ -8,6 +8,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('dashboard/notes/new/', views.create_client_note, name='client_note_create'),
     path('dashboard/messages/<int:thread_id>/send/', views.send_message, name='message_send'),
+    path('dashboard/notifications/read/', views.mark_notifications_read, name='notifications_read'),
     path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('register/', views.register, name='register'),
     path('register/client/', views.register_client, name='register_client'),

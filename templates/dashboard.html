@@ -11,6 +11,33 @@
     {% if request.user.role == 'photographer' %}<a href="{% url 'portfolio_manage' %}" class="button button-primary">Manage your work <span aria-hidden="true">→</span></a>{% else %}<a href="{% url 'home' %}#photographers" class="button button-primary">Find a photographer <span aria-hidden="true">→</span></a>{% endif %}
 </section>
 
+<nav class="dashboard-nav" aria-label="Dashboard sections">
+    {% if request.user.role == 'photographer' %}
+        <a class="dashboard-nav-active" href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'client_note_create' %}">Clients</a>
+        <a href="{% url 'booking_list' %}">Bookings</a>
+        <a href="{% url 'portfolio_manage' %}">Galleries</a>
+        <a href="{% url 'booking_list' %}#invoices">Invoices</a>
+        <a href="{% url 'booking_list' %}#contracts">Contracts</a>
+        <a href="{% url 'booking_list' %}#messages">Messages</a>
+        <a href="{% url 'profile_edit' %}">Settings</a>
+    {% else %}
+        <a class="dashboard-nav-active" href="{% url 'dashboard' %}">Home</a>
+        <a href="#galleries">My Galleries</a>
+        <a href="{% url 'booking_list' %}">My Bookings</a>
+        <a href="{% url 'booking_list' %}#invoices">Invoices</a>
+        <a href="#messages">Messages</a>
+        <a href="{% url 'profile_edit' %}">Profile</a>
+    {% endif %}
+</nav>
+
+{% if notifications %}
+<section class="dashboard-notifications" aria-labelledby="notifications-title">
+    <div class="notification-heading"><div><p class="eyebrow">Stay in the loop</p><h2 id="notifications-title">Notifications{% if unread_notifications %} <span class="notification-count">{{ unread_notifications }}</span>{% endif %}</h2></div><form method="post" action="{% url 'notifications_read' %}">{% csrf_token %}<button class="text-link notification-mark-read" type="submit">Mark all read</button></form></div>
+    <div class="notification-list">{% for notification in notifications %}<a class="notification-row{% if not notification.is_read %} notification-unread{% endif %}" href="{{ notification.link|default:'#' }}"><span class="notification-dot" aria-hidden="true"></span><span><strong>{{ notification.title }}</strong><small>{{ notification.body }}</small></span><time datetime="{{ notification.created_at|date:'c' }}">{{ notification.created_at|timesince }} ago</time></a>{% endfor %}</div>
+</section>
+{% endif %}
+
 <section class="dashboard-overview">
     {% if request.user.role == 'photographer' %}
     <div class="overview-card overview-card-dark"><span class="overview-label">Upcoming shoots</span><strong>{{ upcoming_count }}</strong><span class="overview-foot">Keep the story moving</span></div>
@@ -32,7 +59,7 @@
     </div>
 </section>
 {% else %}
-<section class="dashboard-workspace" aria-labelledby="client-space-title">
+<section id="galleries" class="dashboard-workspace" aria-labelledby="client-space-title">
     <div class="section-heading compact"><div><p class="eyebrow">Your private space</p><h2 id="client-space-title">Everything in reach.</h2></div><span class="section-aside">{{ galleries|length }} galleries<br>{{ contracts|length }} contracts</span></div>
     <div class="workspace-grid">
         <article class="workspace-card"><div class="workspace-card-head"><div><span class="overview-label">Latest galleries</span><h3>Your photographs</h3></div></div>{% for gallery in galleries %}<a class="workspace-row workspace-row-link" href="{% url 'album_detail' gallery.album.pk %}"><span class="gallery-thumb">{% with cover=gallery.album.photos.all.0 %}{% if cover %}<img src="{{ cover.image.url }}" alt="">{% else %}<span aria-hidden="true">P</span>{% endif %}{% endwith %}</span><div><strong>{{ gallery.album.title }}</strong><small>with {{ gallery.album.photographer.profile.display_name }}{% if gallery.allow_downloads %} · downloads on{% endif %}</small></div><span aria-hidden="true">→</span></a>{% empty %}<p class="workspace-empty">Your photographer's private galleries will appear here.</p>{% endfor %}</article>

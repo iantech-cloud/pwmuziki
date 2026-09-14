@@ -3,6 +3,14 @@ from django.db import models
 from bookings.models import Booking
 
 class Invoice(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = 'draft', 'Draft'
+        SENT = 'sent', 'Sent'
+        VIEWED = 'viewed', 'Viewed'
+        PARTIAL = 'partial', 'Partially paid'
+        PAID = 'paid', 'Paid'
+        OVERDUE = 'overdue', 'Overdue'
+
     booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='invoice')
     number = models.CharField(max_length=40, unique=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -11,8 +19,21 @@ class Invoice(models.Model):
     reservation_paid = models.BooleanField(default=False)
     balance_paid = models.BooleanField(default=False)
     due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    notes = models.TextField(blank=True)
     is_paid = models.BooleanField(default=False)
     issued_at = models.DateTimeField(auto_now_add=True)
+
+
+class InvoiceLineItem(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='line_items')
+    description = models.CharField(max_length=180)
+    quantity = models.PositiveIntegerField(default=1)
+    unit_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    @property
+    def amount(self):
+        return self.quantity * self.unit_amount
 
 class Transaction(models.Model):
     class Status(models.TextChoices):

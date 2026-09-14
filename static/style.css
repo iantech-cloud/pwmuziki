@@ -193,6 +193,24 @@ h3 { font-size: 19px; }
 .dashboard-tool-links small { color: var(--muted); font-size: 11px; }
 .dashboard-tool-links b { grid-column: 3; grid-row: 1 / 3; align-self: center; color: var(--rust); font-weight: 400; }
 
+.dashboard-nav { display: flex; gap: 8px; overflow-x: auto; margin: -20px 0 38px; padding: 8px; border: 1px solid var(--line); background: var(--white); scrollbar-width: thin; }
+.dashboard-nav a { flex: 0 0 auto; padding: 9px 12px; color: var(--muted); font: 11px var(--mono); white-space: nowrap; }
+.dashboard-nav a:hover, .dashboard-nav .dashboard-nav-active { background: var(--night); color: var(--white); }
+.dashboard-notifications { margin: -12px 0 48px; padding: 20px 22px; border: 1px solid var(--line); background: var(--white); }
+.notification-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.notification-heading h2 { font-size: 29px; }
+.notification-count { display: inline-grid; min-width: 22px; height: 22px; place-items: center; border-radius: 50%; background: var(--rust); color: var(--white); font: 11px var(--mono); vertical-align: middle; }
+.notification-list { display: grid; margin-top: 13px; }
+.notification-row { display: grid; grid-template-columns: 8px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); color: var(--muted); }
+.notification-row strong, .notification-row small { display: block; }
+.notification-row strong { color: var(--ink); font-size: 13px; }
+.notification-row small, .notification-row time { font-size: 11px; }
+.notification-row time { font-family: var(--mono); white-space: nowrap; }
+.notification-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.notification-unread .notification-dot { background: var(--rust); }
+.notification-unread strong { color: var(--rust-dark); }
+.notification-mark-read { border: 0; background: transparent; cursor: pointer; }
+
 /* Dashboard workspace */
 .dashboard-workspace { padding-top: 76px; }
 .workspace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -367,8 +385,13 @@ h3 { font-size: 19px; }
     .dashboard-overview { grid-template-columns: 1fr 1fr; }
     .overview-card:first-child { grid-column: 1 / -1; }
     .dashboard-profile { grid-template-columns: 100px 1fr; gap: 22px; padding: 22px; }
-    .dashboard-tool-links { grid-template-columns: 1fr; }
-    .dashboard-portfolio-grid { grid-template-columns: 1fr; }
+  .dashboard-tool-links { grid-template-columns: 1fr; }
+  .dashboard-nav { margin-top: -8px; margin-bottom: 28px; }
+  .dashboard-notifications { padding: 17px; }
+  .notification-heading { align-items: start; flex-direction: column; }
+  .notification-row { grid-template-columns: 8px 1fr; }
+  .notification-row time { grid-column: 2; }
+  .dashboard-portfolio-grid { grid-template-columns: 1fr; }
     .hero-role-links { align-items: start; flex-direction: column; gap: 5px; }
     .profile-image { width: 100px; height: 100px; }
     .profile-image span { font-size: 55px; }
