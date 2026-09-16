@@ -28,11 +28,6 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='payout',
-            name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('processing', 'Processing'), ('paid', 'Paid'), ('failed', 'Failed')], default='pending', max_length=20),
-        ),
-        migrations.AddField(
             model_name='transaction',
             name='receipt_number',
             field=models.CharField(blank=True, max_length=80),

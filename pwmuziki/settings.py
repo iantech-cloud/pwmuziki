@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,6 +37,15 @@ for host_variable in ('REPLIT_DEV_DOMAIN', 'VERCEL_URL'):
     host = os.environ.get(host_variable)
     if host:
         ALLOWED_HOSTS.append(host.split('://', 1)[-1].split('/', 1)[0])
+
+CSRF_TRUSTED_ORIGINS = ['https://pwmuziki.vercel.app']
+for origin_variable in ('VERCEL_URL', 'REPLIT_DEV_DOMAIN'):
+    origin = os.environ.get(origin_variable)
+    if origin:
+        origin = origin if origin.startswith('http') else f'https://{origin}'
+        CSRF_TRUSTED_ORIGINS.append(origin.rstrip('/'))
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS.extend(['http://localhost:8000', 'http://127.0.0.1:8000'])
 
 
 # Application definition
@@ -92,12 +102,29 @@ WSGI_APPLICATION = 'pwmuziki.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    parsed_database_url = urlparse(DATABASE_URL)
+    database_options = dict(parse_qsl(parsed_database_url.query))
+    database_options.setdefault('sslmode', 'require')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': parsed_database_url.path.lstrip('/'),
+            'USER': parsed_database_url.username,
+            'PASSWORD': parsed_database_url.password,
+            'HOST': parsed_database_url.hostname,
+            'PORT': parsed_database_url.port or 5432,
+            'OPTIONS': database_options,
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
