@@ -1,6 +1,20 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import ClientNote, Message, Profile, User
+
+
+class EmailOrUsernameAuthenticationForm(AuthenticationForm):
+    username = forms.CharField(label='Username or email')
+
+    def clean(self):
+        username_or_email = self.cleaned_data.get('username')
+        if username_or_email and '@' in username_or_email:
+            self.cleaned_data['username'] = User.objects.filter(
+                email__iexact=username_or_email,
+                is_active=True,
+            ).values_list('username', flat=True).first() or username_or_email
+        return super().clean()
+
 
 class RegistrationForm(UserCreationForm):
     email = forms.EmailField()
