@@ -66,6 +66,22 @@ class DashboardFlowTests(TestCase):
         self.assertContains(response, 'Request a booking')
         self.assertContains(response, 'Browse photographers')
 
+    def test_dashboard_dispatches_to_canonical_client_route(self):
+        user = User.objects.create_user(username='client-dispatch', email='client-dispatch@example.com', password='pass')
+        self.client.force_login(user)
+
+        response = self.client.get('/dashboard/')
+
+        self.assertRedirects(response, '/client/dashboard/')
+
+    def test_dashboard_dispatches_to_canonical_photographer_route(self):
+        user = User.objects.create_user(username='photographer-dispatch', email='photographer-dispatch@example.com', password='pass', role=User.Role.PHOTOGRAPHER)
+        self.client.force_login(user)
+
+        response = self.client.get('/dashboard/')
+
+        self.assertRedirects(response, '/photographer/dashboard/')
+
     def test_photographer_dashboard_renders_work_actions(self):
         user = User.objects.create_user(
             username='photographer-dashboard',

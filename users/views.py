@@ -117,8 +117,8 @@ def photographer_detail(request, pk):
 @login_required
 def dashboard(request):
     if request.user.role == User.Role.PHOTOGRAPHER:
-        return render(request, 'dashboard_photographer.html', _dashboard_context(request))
-    return render(request, 'dashboard_client.html', _dashboard_context(request))
+        return redirect('photographer_dashboard')
+    return redirect('client_dashboard')
 
 
 @login_required
