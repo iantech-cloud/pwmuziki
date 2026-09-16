@@ -94,6 +94,7 @@ def dashboard(request):
     context = {
         'bookings': bookings[:8],
         'profile': profile,
+        'now': timezone.now(),
         'notifications': Notification.objects.filter(recipient=request.user)[:6],
         'unread_notifications': Notification.objects.filter(recipient=request.user, is_read=False).count(),
     }

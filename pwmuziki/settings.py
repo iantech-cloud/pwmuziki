@@ -19,6 +19,7 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 ALLOWED_HOSTS = [
     'pwmuziki.vercel.app',
     '.vercel.app',
+    '.vercel.run',
     '127.0.0.1',
     'localhost',
     '0.0.0.0',
