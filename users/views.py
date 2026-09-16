@@ -36,7 +36,7 @@ def _dashboard_context(request):
         request.user.client_bookings.all()
         if request.user.role == User.Role.CLIENT
         else request.user.photographer_bookings.all()
-    ).select_related('client', 'photographer')
+    ).exclude(status='cancelled').select_related('client', 'photographer')
     profile = Profile.ensure_for(request.user)
     context = {
         'bookings': bookings[:8],
