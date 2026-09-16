@@ -612,14 +612,17 @@ h3 { font-size: 19px; }
 .quick-panel { background: var(--white); }
 
 @media (max-width: 800px) {
-    .photographer-page-shell, .client-page-shell { display: block; }
+    .photographer-page-shell, .client-page-shell { display: block !important; width: 100%; max-width: 100%; overflow-x: clip; }
     .photographer-page-nav { position: static; margin: -8px 0 26px; padding: 0 0 8px; border-bottom: 1px solid var(--line); overflow: hidden; }
     .photographer-page-nav__heading { margin-bottom: 10px; font-size: 15px; }
     .photographer-page-nav nav { flex-direction: row; gap: 2px; overflow-x: auto; padding-bottom: 3px; scrollbar-width: thin; }
     .photographer-page-nav nav a { flex: 0 0 auto; padding: 8px 10px; border: 0; white-space: nowrap; }
     .photographer-page-nav nav a:hover, .photographer-page-nav nav a.active { border: 0; background: var(--paper-deep); }
-    .page-content { padding-top: 28px; }
+    .page-content { width: 100%; max-width: 100%; box-sizing: border-box; padding: 28px 16px 50px; }
     .page-heading { align-items: flex-start; flex-direction: column; gap: 18px; margin: 18px 0 30px; }
+    .photographer-page-shell > .photographer-page-nav, .client-page-shell > .photographer-page-nav { width: 100%; min-width: 0; }
+    .photographer-page-shell > :not(.photographer-page-nav), .client-page-shell > :not(.photographer-page-nav) { width: 100%; max-width: 100%; box-sizing: border-box; }
+    .page-content .form-card, .page-content .panel, .page-content table, .page-content .table-wrap { max-width: 100%; overflow-x: auto; }
     .form-card { padding: 22px; }
     .availability-row { grid-template-columns: 1fr auto; gap: 10px 14px; }
     .availability-row form { grid-column: 2; grid-row: 1; }
@@ -636,6 +639,7 @@ h3 { font-size: 19px; }
 }
 
 @media (max-width: 480px) {
+    .photographer-page-shell, .client-page-shell { grid-template-columns: minmax(0, 1fr); }
     .role-sidebar nav a { padding: 8px 9px; font-size: 11px; }
     .role-main { width: calc(100% - 28px); }
     .role-topbar h1 { max-width: 330px; font-size: 32px; }

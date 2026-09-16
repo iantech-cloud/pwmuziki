@@ -4,7 +4,10 @@ from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Load shared defaults first, then local overrides. Existing deployment variables
+# remain authoritative because python-dotenv does not override os.environ by default.
 load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR / '.env.local')
 
 
 # Quick-start development settings - unsuitable for production
