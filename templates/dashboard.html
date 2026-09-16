@@ -58,7 +58,7 @@
     <div class="today-card">
         <div class="command-card-head"><div><span class="overview-label">Today, {{ now|date:"M j" }}</span><h2 id="workspace-title">Your creative brief.</h2></div><span class="command-status"><i></i> Studio live</span></div>
         <div class="schedule-list">
-            {% for booking in bookings|slice:":3" %}<a class="schedule-item" href="{% url 'booking_detail' booking.pk %}"><time>{{ booking.event_date|date:"g:i A" }}</time><span class="schedule-line"></span><span><strong>{{ booking.event_type }}</strong><small>with {{ booking.client.profile.display_name }}</small></span><b aria-hidden="true">↗</b></a>{% empty %}<div class="schedule-empty"><span class="schedule-icon">+</span><div><strong>A quiet day is still a good day.</strong><small>Add a booking or make space for your next idea.</small></div></div>{% endfor %}
+            {% for booking in bookings|slice:":3" %}<a class="schedule-item" href="{% url 'booking_detail' booking.pk %}"><time>{{ booking.event_date|date:"M j" }}</time><span class="schedule-line"></span><span><strong>{{ booking.event_type }}</strong><small>with {{ booking.client.profile.display_name }}</small></span><b aria-hidden="true">↗</b></a>{% empty %}<div class="schedule-empty"><span class="schedule-icon">+</span><div><strong>A quiet day is still a good day.</strong><small>Add a booking or make space for your next idea.</small></div></div>{% endfor %}
         </div>
         <a class="text-link" href="{% url 'booking_list' %}">Open your calendar <span aria-hidden="true">→</span></a>
     </div>
