@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from urllib.parse import urlparse
 from django.utils import timezone
 
 from .forms import AlbumForm, DeliveryPhotoForm, DeliverySettingsForm, PhotoForm
@@ -107,5 +108,8 @@ def delivery_link(request, booking_id):
     from bookings.models import BookingStatus, Booking
     booking = get_object_or_404(Booking, pk=booking_id, client=request.user)
     if booking.status != BookingStatus.COMPLETED or not booking.google_drive_url:
+        raise Http404
+    parsed_url = urlparse(booking.google_drive_url)
+    if parsed_url.scheme != 'https' or parsed_url.hostname not in {'drive.google.com', 'docs.google.com'}:
         raise Http404
     return redirect(booking.google_drive_url)

@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.conf import settings
+from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -77,7 +79,7 @@ def payment_start(request, booking_id, phase='reservation'):
         transaction.status = Transaction.Status.FAILED
         transaction.raw_response = {'error': str(exc)}
         transaction.save(update_fields=['status', 'raw_response'])
-        return render(request, 'payments/status.html', {'booking': booking, 'phase': phase, 'error': str(exc)})
+        return render(request, 'payments/status.html', {'booking': booking, 'phase': phase, 'error': 'We could not start the payment. Please try again or contact support.'})
 
     transaction.provider_reference = response.get('CheckoutRequestID') or response.get('MerchantRequestID')
     transaction.raw_response = response
@@ -112,9 +114,16 @@ def invoice_detail(request, booking_id):
     return render(request, 'payments/invoice.html', {'booking': booking, 'invoice': invoice})
 
 
+def _callback_is_authorized(request):
+    expected = getattr(settings, 'MPESA_CALLBACK_TOKEN', '')
+    return not expected or request.GET.get('token') == expected or request.headers.get('X-Pwmuziki-Callback-Token') == expected
+
+
 @csrf_exempt
 @require_POST
 def mpesa_callback(request):
+    if not _callback_is_authorized(request):
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Unauthorized callback'}, status=403)
     try:
         payload = json.loads(request.body.decode('utf-8'))
         callback = payload['Body']['stkCallback']
@@ -122,54 +131,63 @@ def mpesa_callback(request):
         return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Invalid callback payload'}, status=400)
 
     checkout_id = callback.get('CheckoutRequestID')
-    transaction = Transaction.objects.filter(provider_reference=checkout_id).select_related('invoice').first()
-    if not transaction:
-        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback acknowledged'})
+    with transaction.atomic():
+        transaction = Transaction.objects.select_for_update().select_related('invoice', 'invoice__booking').filter(provider_reference=checkout_id).first()
+        if not transaction:
+            return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback acknowledged'})
+        if transaction.status == Transaction.Status.SUCCESS:
+            return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback already processed'})
 
-    transaction.raw_response = payload
-    if transaction.status == Transaction.Status.SUCCESS:
-        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback already processed'})
-    metadata = {
-        item.get('Name'): item.get('Value')
-        for item in callback.get('CallbackMetadata', {}).get('Item', [])
-        if item.get('Name')
-    }
-    amount_matches = metadata.get('Amount') is None or Decimal(str(metadata['Amount'])) == transaction.amount
-    if str(callback.get('ResultCode')) == '0' and amount_matches:
-        transaction.status = Transaction.Status.SUCCESS
-        transaction.receipt_number = str(metadata.get('MpesaReceiptNumber') or '')
-        invoice = transaction.invoice
-        if transaction.purpose == Transaction.Purpose.RESERVATION:
-            invoice.reservation_paid = True
-            invoice.reservation_amount = transaction.amount
-            invoice.save(update_fields=['reservation_paid', 'reservation_amount'])
-            booking = invoice.booking
-            booking.reservation_status = ReservationStatus.HELD
-            booking.reservation_paid_at = timezone.now()
-            if booking.status in (BookingStatus.RESERVATION_DUE, BookingStatus.CONFIRMED):
-                booking.status = BookingStatus.RESERVED
-            booking.save(update_fields=('reservation_status', 'reservation_paid_at', 'status', 'updated_at'))
+        transaction.raw_response = payload
+        metadata = {
+            item.get('Name'): item.get('Value')
+            for item in callback.get('CallbackMetadata', {}).get('Item', [])
+            if item.get('Name')
+        }
+        try:
+            callback_amount = Decimal(str(metadata['Amount']))
+        except (KeyError, TypeError, ValueError):
+            callback_amount = None
+        receipt_number = str(metadata.get('MpesaReceiptNumber') or '')
+        amount_matches = callback_amount is not None and callback_amount == transaction.amount
+        successful = str(callback.get('ResultCode')) == '0'
+        if successful and amount_matches and receipt_number:
+            transaction.status = Transaction.Status.SUCCESS
+            transaction.receipt_number = receipt_number
+            invoice = transaction.invoice
+            if transaction.purpose == Transaction.Purpose.RESERVATION:
+                invoice.reservation_paid = True
+                invoice.reservation_amount = transaction.amount
+                invoice.save(update_fields=['reservation_paid', 'reservation_amount'])
+                booking = invoice.booking
+                booking.reservation_status = ReservationStatus.HELD
+                booking.reservation_paid_at = timezone.now()
+                if booking.status in (BookingStatus.RESERVATION_DUE, BookingStatus.CONFIRMED):
+                    booking.status = BookingStatus.RESERVED
+                booking.save(update_fields=('reservation_status', 'reservation_paid_at', 'status', 'updated_at'))
+            else:
+                invoice.balance_paid = True
+                invoice.is_paid = True
+                invoice.balance_amount = transaction.amount
+                invoice.save(update_fields=['balance_paid', 'is_paid', 'balance_amount'])
+                booking = invoice.booking
+                booking.balance_paid_at = timezone.now()
+                booking.status = BookingStatus.COMPLETED
+                booking.save(update_fields=('balance_paid_at', 'status', 'updated_at'))
+                dispatch_payout(payout=create_payout(payment=transaction))
         else:
-            invoice.balance_paid = True
-            invoice.is_paid = True
-            invoice.balance_amount = transaction.amount
-            invoice.save(update_fields=['balance_paid', 'is_paid', 'balance_amount'])
-            booking = invoice.booking
-            booking.balance_paid_at = timezone.now()
-            booking.status = BookingStatus.COMPLETED
-            booking.save(update_fields=('balance_paid_at', 'status', 'updated_at'))
-            dispatch_payout(payout=create_payout(payment=transaction))
-    else:
-        transaction.status = Transaction.Status.FAILED
-        if str(callback.get('ResultCode')) == '0' and not amount_matches:
-            transaction.raw_response = {**payload, 'validation_error': 'Callback amount did not match the initiated transaction.'}
-    transaction.save(update_fields=['status', 'raw_response', 'receipt_number'])
+            transaction.status = Transaction.Status.FAILED
+            if successful:
+                transaction.raw_response = {**payload, 'validation_error': 'Callback amount or receipt did not match the initiated transaction.'}
+        transaction.save(update_fields=['status', 'raw_response', 'receipt_number'])
     return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback processed'})
 
 
 @csrf_exempt
 @require_POST
 def mpesa_b2c_result(request):
+    if not _callback_is_authorized(request):
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Unauthorized callback'}, status=403)
     try:
         payload = json.loads(request.body.decode('utf-8'))
         result = payload['Result']
@@ -197,4 +215,6 @@ def mpesa_b2c_result(request):
 @csrf_exempt
 @require_POST
 def mpesa_b2c_timeout(request):
+    if not _callback_is_authorized(request):
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Unauthorized callback'}, status=403)
     return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Timeout acknowledged'})

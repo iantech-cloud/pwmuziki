@@ -4,6 +4,7 @@ import json
 import re
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
 from django.conf import settings
 
@@ -14,8 +15,8 @@ def _request(url, *, method='GET', headers=None, payload=None):
         with urlopen(request, timeout=15) as response:
             return json.loads(response.read())
     except HTTPError as exc:
-        body = exc.read().decode('utf-8', errors='replace')
-        raise RuntimeError(f'Daraja returned HTTP {exc.code}: {body[:240]}') from exc
+        exc.read()
+        raise RuntimeError(f'Daraja returned HTTP {exc.code}.') from exc
     except URLError as exc:
         raise RuntimeError(f'Could not reach Daraja: {exc.reason}') from exc
 
@@ -50,6 +51,12 @@ def initiate_stk_push(*, phone_number, amount, account_reference, description):
         raise ValueError('Payment amount must be greater than zero.')
     timestamp = datetime.now(ZoneInfo('Africa/Nairobi')).strftime('%Y%m%d%H%M%S')
     password = base64.b64encode(f'{settings.MPESA_SHORTCODE}{settings.MPESA_PASSKEY}{timestamp}'.encode()).decode()
+    callback_url = settings.MPESA_CALLBACK_URL
+    if settings.MPESA_CALLBACK_TOKEN:
+        parts = urlsplit(callback_url)
+        query = dict(parse_qsl(parts.query, keep_blank_values=True))
+        query['token'] = settings.MPESA_CALLBACK_TOKEN
+        callback_url = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
     payload = {
         'BusinessShortCode': settings.MPESA_SHORTCODE,
         'Password': password,
@@ -59,7 +66,7 @@ def initiate_stk_push(*, phone_number, amount, account_reference, description):
         'PartyA': phone_number,
         'PartyB': settings.MPESA_PARTY_B,
         'PhoneNumber': phone_number,
-        'CallBackURL': settings.MPESA_CALLBACK_URL,
+        'CallBackURL': callback_url,
         'AccountReference': account_reference or settings.MPESA_ACCOUNT_REFERENCE,
         'TransactionDesc': description,
     }

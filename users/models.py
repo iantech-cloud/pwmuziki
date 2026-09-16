@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -52,6 +53,12 @@ class GalleryAccess(models.Model):
     expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     published_at = models.DateTimeField(null=True, blank=True)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password) if raw_password else ''
+
+    def check_password(self, raw_password):
+        return bool(self.password) and check_password(raw_password, self.password)
 
 
 class GalleryFavorite(models.Model):
