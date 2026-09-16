@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db import DatabaseError, transaction
 from django.db.models import Avg, Prefetch
 from django.utils import timezone
 from reviews.models import Review
@@ -182,6 +183,16 @@ def profile_edit(request):
     profile = Profile.ensure_for(request.user)
     form = ProfileForm(request.POST or None, request.FILES or None, instance=profile, user=request.user)
     if request.method == 'POST' and form.is_valid():
-        form.save()
+        try:
+            with transaction.atomic():
+                form.save()
+        except (DatabaseError, OSError, RuntimeError):
+            # Vercel's runtime filesystem is read-only; keep profile text updates safe
+            # when an avatar upload cannot be persisted by the configured storage.
+            if request.FILES.get('avatar'):
+                form.add_error('avatar', 'This image could not be saved. Please try a smaller image or update the other profile fields without an avatar.')
+            else:
+                messages.error(request, 'We could not save your profile. Please try again.')
+            return render(request, 'profile/edit.html', {'form': form, 'profile': profile}, status=200)
         return redirect('dashboard')
     return render(request, 'profile/edit.html', {'form': form, 'profile': profile})
