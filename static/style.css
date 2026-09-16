@@ -612,7 +612,7 @@ h3 { font-size: 19px; }
 .quick-panel { background: var(--white); }
 
 @media (max-width: 800px) {
-    .photographer-page-shell { display: block; }
+    .photographer-page-shell, .client-page-shell { display: block; }
     .photographer-page-nav { position: static; margin: -8px 0 26px; padding: 0 0 8px; border-bottom: 1px solid var(--line); overflow: hidden; }
     .photographer-page-nav__heading { margin-bottom: 10px; font-size: 15px; }
     .photographer-page-nav nav { flex-direction: row; gap: 2px; overflow-x: auto; padding-bottom: 3px; scrollbar-width: thin; }
@@ -654,14 +654,14 @@ h3 { font-size: 19px; }
 .availability-layout .form-field:has(input[type="checkbox"]) label { order: 2; margin: 0; }
 .availability-layout .form-field:has(input[type="checkbox"]) input { order: 1; }
 
-.photographer-page-shell { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 42px; align-items: start; }
+.photographer-page-shell, .client-page-shell { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 42px; align-items: start; }
 .photographer-page-nav { position: sticky; top: 108px; padding: 18px 0; }
 .photographer-page-nav__heading { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--ink); font: 16px var(--display); }
 .photographer-page-nav__heading .role-mark { flex: 0 0 30px; }
 .photographer-page-nav nav { display: flex; flex-direction: column; gap: 3px; }
 .photographer-page-nav nav a { padding: 10px 12px; border-left: 2px solid transparent; color: var(--muted); font-size: 12px; text-decoration: none; transition: background .2s ease, color .2s ease, border-color .2s ease; }
 .photographer-page-nav nav a:hover, .photographer-page-nav nav a.active { border-left-color: var(--rust); background: var(--paper-deep); color: var(--ink); }
-.photographer-page-shell > :not(.photographer-page-nav) { min-width: 0; }
+.photographer-page-shell > :not(.photographer-page-nav), .client-page-shell > :not(.photographer-page-nav) { min-width: 0; }
 
 @media (min-width: 801px) {
     .role-sidebar { display: flex; align-items: center; gap: 28px; }
