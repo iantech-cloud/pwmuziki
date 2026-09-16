@@ -77,6 +77,9 @@ def _register(request, initial_role=None):
     })
 
 def home(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
     photographers = (
         User.objects.filter(role=User.Role.PHOTOGRAPHER, is_active=True)
         .select_related('profile')

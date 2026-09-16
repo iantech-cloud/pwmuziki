@@ -40,7 +40,10 @@ class RegistrationFlowTests(TestCase):
 
         response = self.client.post('/register/client/', data)
 
-        self.assertRedirects(response, '/dashboard/')
+        self.assertRedirects(response, '/dashboard/', fetch_redirect_response=False)
+        self.assertEqual(response.wsgi_request.user.role, User.Role.CLIENT)
+        dashboard_response = self.client.get('/dashboard/')
+        self.assertRedirects(dashboard_response, '/client/dashboard/')
         self.assertEqual(User.objects.get(username='new-client').role, User.Role.CLIENT)
         self.assertEqual(response.wsgi_request.user.role, User.Role.CLIENT)
 
@@ -50,7 +53,10 @@ class RegistrationFlowTests(TestCase):
 
         response = self.client.post('/register/photographer/', data)
 
-        self.assertRedirects(response, '/dashboard/')
+        self.assertRedirects(response, '/dashboard/', fetch_redirect_response=False)
+        self.assertEqual(response.wsgi_request.user.role, User.Role.PHOTOGRAPHER)
+        dashboard_response = self.client.get('/dashboard/')
+        self.assertRedirects(dashboard_response, '/photographer/dashboard/')
         self.assertEqual(User.objects.get(username='new-photographer').role, User.Role.PHOTOGRAPHER)
         self.assertEqual(response.wsgi_request.user.role, User.Role.PHOTOGRAPHER)
 
@@ -60,7 +66,7 @@ class DashboardFlowTests(TestCase):
         user = User.objects.create_user(username='client-dashboard', email='client-dashboard@example.com', password='pass')
         self.client.force_login(user)
 
-        response = self.client.get('/dashboard/')
+        response = self.client.get('/client/dashboard/')
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Request a booking')
@@ -91,7 +97,7 @@ class DashboardFlowTests(TestCase):
         )
         self.client.force_login(user)
 
-        response = self.client.get('/dashboard/')
+        response = self.client.get('/photographer/dashboard/')
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Manage portfolio')
