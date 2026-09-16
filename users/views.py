@@ -2,6 +2,7 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Avg, Prefetch
 from django.utils import timezone
@@ -28,6 +29,36 @@ def register_client(request):
 
 def register_photographer(request):
     return register_as(request, User.Role.PHOTOGRAPHER)
+
+
+def _dashboard_context(request):
+    bookings = (
+        request.user.client_bookings.all()
+        if request.user.role == User.Role.CLIENT
+        else request.user.photographer_bookings.all()
+    ).select_related('client', 'photographer')
+    profile = Profile.ensure_for(request.user)
+    context = {
+        'bookings': bookings[:8],
+        'profile': profile,
+        'notifications': Notification.objects.filter(recipient=request.user)[:6],
+        'unread_notifications': Notification.objects.filter(recipient=request.user, is_read=False).count(),
+    }
+    today = timezone.localdate()
+    context['upcoming_count'] = bookings.filter(event_date__gte=today).exclude(status='cancelled').count()
+    if request.user.role == User.Role.PHOTOGRAPHER:
+        context.update({
+            'portfolio_albums': Album.objects.filter(photographer=request.user).prefetch_related('photos').order_by('-created_at'),
+            'pending_count': bookings.filter(status='pending').count(),
+            'gallery_count': GalleryAccess.objects.filter(album__photographer=request.user).count(),
+        })
+    else:
+        context.update({
+            'awaiting_count': bookings.filter(status='pending').count(),
+            'balance_due': sum((booking.balance for booking in bookings.filter(status='balance_due')), 0),
+            'galleries': GalleryAccess.objects.filter(client=request.user).select_related('album', 'album__photographer__profile')[:5],
+        })
+    return context
 
 
 def _register(request, initial_role=None):
@@ -85,39 +116,23 @@ def photographer_detail(request, pk):
 
 @login_required
 def dashboard(request):
-    bookings = (
-        request.user.client_bookings.all()
-        if request.user.role == User.Role.CLIENT
-        else request.user.photographer_bookings.all()
-    ).select_related('client', 'photographer')
-    profile = Profile.ensure_for(request.user)
-    context = {
-        'bookings': bookings[:8],
-        'profile': profile,
-        'now': timezone.now(),
-        'notifications': Notification.objects.filter(recipient=request.user)[:6],
-        'unread_notifications': Notification.objects.filter(recipient=request.user, is_read=False).count(),
-    }
-    today = timezone.localdate()
-    context['upcoming_count'] = bookings.filter(event_date__gte=today).exclude(status='cancelled').count()
     if request.user.role == User.Role.PHOTOGRAPHER:
-        context['portfolio_albums'] = Album.objects.filter(photographer=request.user).prefetch_related('photos').order_by('-created_at')
-        context['pending_count'] = bookings.filter(status='pending').count()
-        context['confirmed_count'] = bookings.filter(status__in=['reservation_due', 'reserved', 'arrival_confirmed', 'balance_due']).count()
-        context['published_count'] = Album.objects.filter(photographer=request.user, is_public=True).count()
-        context['client_count'] = bookings.values('client_id').distinct().count()
-        context['notes'] = ClientNote.objects.filter(photographer=request.user).select_related('client__profile')[:5]
-        context['gallery_count'] = GalleryAccess.objects.filter(album__photographer=request.user).count()
-        context['contract_count'] = Contract.objects.filter(booking__photographer=request.user).count()
-        context['threads'] = MessageThread.objects.filter(photographer=request.user).select_related('client__profile')[:5]
-        context['studio_settings'] = StudioSettings.objects.filter(photographer=request.user).first()
-    else:
-        context['awaiting_count'] = bookings.filter(status='pending').count()
-        context['balance_due'] = sum((booking.balance for booking in bookings.filter(status='balance_due')), 0)
-        context['galleries'] = GalleryAccess.objects.filter(client=request.user).select_related('album', 'album__photographer__profile')[:5]
-        context['contracts'] = Contract.objects.filter(booking__client=request.user).select_related('booking')[:5]
-        context['threads'] = MessageThread.objects.filter(client=request.user).select_related('photographer__profile')[:5]
-    return render(request, 'dashboard.html', context)
+        return render(request, 'dashboard_photographer.html', _dashboard_context(request))
+    return render(request, 'dashboard_client.html', _dashboard_context(request))
+
+
+@login_required
+def photographer_dashboard(request):
+    if request.user.role != User.Role.PHOTOGRAPHER:
+        return redirect('client_dashboard')
+    return render(request, 'dashboard_photographer.html', _dashboard_context(request))
+
+
+@login_required
+def client_dashboard(request):
+    if request.user.role != User.Role.CLIENT:
+        return redirect('photographer_dashboard')
+    return render(request, 'dashboard_client.html', _dashboard_context(request))
 
 
 @login_required
