@@ -1,0 +1,17 @@
+<aside class="photographer-page-nav" aria-label="Photographer workspace navigation">
+    <div class="photographer-page-nav__heading">
+        <span class="role-mark" aria-hidden="true">P</span>
+        <span>Photographer workspace</span>
+    </div>
+    <nav>
+        <a class="{% if request.resolver_match.url_name in 'photographer_dashboard dashboard' %}active{% endif %}" href="{% url 'photographer_dashboard' %}">Dashboard</a>
+        <a class="{% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}" href="{% url 'profile_edit' %}">My profile</a>
+        <a class="{% if request.resolver_match.url_name in 'portfolio_manage album_create album_detail album_toggle_public photo_upload' %}active{% endif %}" href="{% url 'portfolio_manage' %}">Portfolio</a>
+        <a class="{% if request.resolver_match.url_name in 'delivery_manage album_detail' %}active{% endif %}" href="{% url 'portfolio_manage' %}">Galleries</a>
+        <a class="{% if request.resolver_match.url_name in 'booking_list booking_detail' %}active{% endif %}" href="{% url 'booking_list' %}">Bookings</a>
+        <a href="{% url 'booking_list' %}#services">Services</a>
+        <a class="{% if request.resolver_match.url_name in 'availability_manage availability_toggle' %}active{% endif %}" href="{% url 'availability_manage' %}">Availability</a>
+        <a href="{% url 'booking_list' %}#messages">Messages</a>
+        <a class="{% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}" href="{% url 'profile_edit' %}">Settings</a>
+    </nav>
+</aside>

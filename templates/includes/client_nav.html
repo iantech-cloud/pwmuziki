@@ -1,0 +1,14 @@
+<aside class="photographer-page-nav client-page-nav" aria-label="Client workspace navigation">
+    <div class="photographer-page-nav__heading">
+        <span class="role-mark" aria-hidden="true">P</span>
+        <span>Client workspace</span>
+    </div>
+    <nav>
+        <a class="{% if request.resolver_match.url_name in 'client_dashboard dashboard' %}active{% endif %}" href="{% url 'client_dashboard' %}">Dashboard</a>
+        <a href="{% url 'home' %}#photographers">Discover photographers</a>
+        <a class="{% if request.resolver_match.url_name in 'booking_list booking_detail booking_create' %}active{% endif %}" href="{% url 'booking_list' %}">My bookings</a>
+        <a href="{% url 'booking_list' %}#messages">Messages</a>
+        <a class="{% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}" href="{% url 'profile_edit' %}">Profile</a>
+        <a href="{% url 'profile_edit' %}">Settings</a>
+    </nav>
+</aside>

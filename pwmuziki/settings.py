@@ -11,10 +11,15 @@ load_dotenv(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SESSION_SECRET', 'django-insecure-local-development-only')
+SECRET_KEY = os.environ.get('SESSION_SECRET')
+if not SECRET_KEY:
+    if os.environ.get('DJANGO_DEBUG', '').lower() == 'true':
+        SECRET_KEY = 'django-insecure-local-development-only'
+    else:
+        raise RuntimeError('SESSION_SECRET must be configured when DEBUG is disabled.')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = [
     'pwmuziki.vercel.app',
@@ -143,6 +148,7 @@ MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', '')
 MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '')
 MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', '')
 MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', '')
+MPESA_CALLBACK_TOKEN = os.environ.get('MPESA_CALLBACK_TOKEN', '')
 MPESA_AUTH_URL = os.environ.get(
     'MPESA_AUTH_URL',
     'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
