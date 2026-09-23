@@ -1,5 +1,6 @@
 import base64
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 import json
 import re
 from urllib.error import HTTPError, URLError
@@ -13,10 +14,18 @@ def _request(url, *, method='GET', headers=None, payload=None):
     request = Request(url, data=body, headers=headers or {}, method=method)
     try:
         with urlopen(request, timeout=15) as response:
-            return json.loads(response.read())
+            body = response.read()
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError as exc:
+                raise RuntimeError('Daraja returned an invalid JSON response.') from exc
     except HTTPError as exc:
-        exc.read()
-        raise RuntimeError(f'Daraja returned HTTP {exc.code}.') from exc
+        try:
+            detail = json.loads(exc.read()).get('errorMessage', '')
+        except (json.JSONDecodeError, AttributeError):
+            detail = ''
+        suffix = f' {detail}' if detail else ''
+        raise RuntimeError(f'Daraja returned HTTP {exc.code}.{suffix}') from exc
     except URLError as exc:
         raise RuntimeError(f'Could not reach Daraja: {exc.reason}') from exc
 
@@ -24,10 +33,8 @@ def mpesa_access_token():
     if not all([
         settings.MPESA_CONSUMER_KEY,
         settings.MPESA_CONSUMER_SECRET,
-        settings.MPESA_SHORTCODE,
-        settings.MPESA_PASSKEY,
     ]):
-        raise RuntimeError('Daraja is not configured yet. Add MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET, MPESA_SHORTCODE, and MPESA_PASSKEY.')
+        raise RuntimeError('Daraja is not configured yet. Add MPESA_CONSUMER_KEY and MPESA_CONSUMER_SECRET.')
     credentials = f'{settings.MPESA_CONSUMER_KEY}:{settings.MPESA_CONSUMER_SECRET}'.encode()
     return _request(settings.MPESA_AUTH_URL, headers={'Authorization': f'Basic {base64.b64encode(credentials).decode()}'})['access_token']
 
@@ -47,8 +54,14 @@ def initiate_stk_push(*, phone_number, amount, account_reference, description):
     phone_number = normalize_phone_number(phone_number)
     if not settings.MPESA_CALLBACK_URL:
         raise RuntimeError('Daraja callback is not configured. Set MPESA_CALLBACK_URL to a public HTTPS endpoint.')
+    try:
+        amount = Decimal(str(amount)).quantize(Decimal('1'))
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        raise ValueError('Payment amount must be a valid number.') from exc
     if amount <= 0:
         raise ValueError('Payment amount must be greater than zero.')
+    if not all((settings.MPESA_SHORTCODE, settings.MPESA_PASSKEY)):
+        raise RuntimeError('STK Push is not configured yet. Add MPESA_SHORTCODE and MPESA_PASSKEY.')
     timestamp = datetime.now(ZoneInfo('Africa/Nairobi')).strftime('%Y%m%d%H%M%S')
     password = base64.b64encode(f'{settings.MPESA_SHORTCODE}{settings.MPESA_PASSKEY}{timestamp}'.encode()).decode()
     callback_url = settings.MPESA_CALLBACK_URL
@@ -76,6 +89,8 @@ def initiate_stk_push(*, phone_number, amount, account_reference, description):
 def query_stk_push(*, checkout_request_id):
     if not checkout_request_id:
         raise ValueError('A checkout request ID is required.')
+    if not all((settings.MPESA_SHORTCODE, settings.MPESA_PASSKEY)):
+        raise RuntimeError('STK Push query is not configured yet. Add MPESA_SHORTCODE and MPESA_PASSKEY.')
     timestamp = datetime.now(ZoneInfo('Africa/Nairobi')).strftime('%Y%m%d%H%M%S')
     password = base64.b64encode(
         f'{settings.MPESA_SHORTCODE}{settings.MPESA_PASSKEY}{timestamp}'.encode()
@@ -107,6 +122,8 @@ def initiate_b2c_payout(*, phone_number, amount, remarks, occasion):
             'B2C payouts are not configured. Add MPESA_B2C_INITIATOR_NAME, '
             'MPESA_B2C_SECURITY_CREDENTIAL, MPESA_B2C_RESULT_URL, and MPESA_B2C_TIMEOUT_URL.'
         )
+    if amount <= 0:
+        raise ValueError('Payout amount must be greater than zero.')
     payload = {
         'InitiatorName': settings.MPESA_B2C_INITIATOR_NAME,
         'SecurityCredential': settings.MPESA_B2C_SECURITY_CREDENTIAL,

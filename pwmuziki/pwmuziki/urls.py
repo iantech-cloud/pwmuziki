@@ -28,8 +28,8 @@ urlpatterns = [
     path('reviews/', include('reviews.urls')),
 ]
 
-admin.site.site_header = 'Pwmuziki administration'
-admin.site.site_title = 'Pwmuziki admin'
+admin.site.site_header = 'AuraCity administration'
+admin.site.site_title = 'AuraCity admin'
 admin.site.index_title = 'Operations dashboard'
 
 if settings.DEBUG:

@@ -11,6 +11,7 @@ from reviews.models import Review
 from .forms import ClientNoteForm, MessageForm, ProfileForm, RegistrationForm
 from .models import ClientNote, Contract, GalleryAccess, MessageThread, Notification, Profile, StudioSettings, User
 from portfolio.models import Album, Photo
+from bookings.models import ServiceType
 
 
 def register(request):
@@ -95,7 +96,8 @@ def home(request):
         )
         .order_by('-profile__is_featured', '-date_joined')
     )
-    return render(request, 'home.html', {'photographers': photographers})
+    packages = ServiceType.objects.filter(is_active=True).order_by('sort_order', 'name')
+    return render(request, 'home.html', {'photographers': photographers, 'packages': packages})
 
 
 def photographer_detail(request, pk):

@@ -1,12 +1,12 @@
 <aside class="workspace-rail client-page-nav" aria-label="Client workspace navigation">
     <div class="workspace-rail__identity">
-        <span class="role-mark" aria-hidden="true">P</span>
-        <div><strong>My Pwmuziki</strong><small>Personal workspace</small></div>
+        <span class="role-mark" aria-hidden="true">A</span>
+        <div><strong>My AuraCity</strong><small>Personal workspace</small></div>
     </div>
     <p class="workspace-rail__label">Your photography plans</p>
     <nav>
         <a class="{% if request.resolver_match.url_name in 'client_dashboard dashboard' %}active{% endif %}" href="{% url 'client_dashboard' %}"><span>01</span>Overview</a>
-        <a href="{% url 'home' %}#photographers"><span>02</span>Discover photographers</a>
+        <a href="{% url 'home' %}#packages"><span>02</span>Explore packages</a>
         <a class="{% if request.resolver_match.url_name in 'booking_list booking_detail booking_create booking_update' %}active{% endif %}" href="{% url 'booking_list' %}"><span>03</span>My bookings</a>
         <a class="{% if request.resolver_match.url_name == 'client_dashboard' %}active{% endif %}" href="{% url 'client_dashboard' %}#galleries"><span>04</span>Private galleries</a>
         <a href="{% url 'booking_list' %}#messages"><span>05</span>Messages</a>

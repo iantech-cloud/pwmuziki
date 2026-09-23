@@ -9,12 +9,12 @@ from django.utils import timezone
 from django.conf import settings
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from bookings.models import Booking, BookingStatus, ReservationStatus
 from .models import Invoice, Payout, Transaction
 from .domain import create_payout, dispatch_payout
-from .services import initiate_stk_push
+from .services import initiate_stk_push, normalize_phone_number
 
 
 def _invoice_for(booking):
@@ -60,38 +60,56 @@ def payment_start(request, booking_id, phase='reservation'):
     phone_number = request.POST.get('phone_number', '').strip()
     if not phone_number:
         return render(request, 'payments/form.html', {'booking': booking, 'phase': phase, 'amount': amount, 'label': label, 'error': 'Enter the M-Pesa phone number to continue.'})
+    try:
+        normalized_phone = normalize_phone_number(phone_number)
+    except ValueError as exc:
+        return render(request, 'payments/form.html', {'booking': booking, 'phase': phase, 'amount': amount, 'label': label, 'error': str(exc)})
 
     invoice = _invoice_for(booking)
-    transaction = Transaction.objects.create(
+    payment = Transaction.objects.create(
         invoice=invoice,
         payer=request.user,
         amount=amount,
         purpose=Transaction.Purpose.RESERVATION if phase == 'reservation' else Transaction.Purpose.BALANCE,
+        phone_number=normalized_phone,
     )
     try:
         response = initiate_stk_push(
-            phone_number=phone_number,
+            phone_number=normalized_phone,
             amount=amount,
             account_reference=invoice.number,
-            description=f'Pwmuziki booking {booking.pk}',
+            description=f'AuraCity booking {booking.pk}',
         )
     except (RuntimeError, OSError, KeyError, ValueError) as exc:
-        transaction.status = Transaction.Status.FAILED
-        transaction.raw_response = {'error': str(exc)}
-        transaction.save(update_fields=['status', 'raw_response'])
-        return render(request, 'payments/status.html', {'booking': booking, 'phase': phase, 'error': 'We could not start the payment. Please try again or contact support.'})
+        payment.status = Transaction.Status.FAILED
+        payment.result_description = str(exc)
+        payment.raw_response = {'error': str(exc)}
+        payment.save(update_fields=['status', 'result_description', 'raw_response'])
+        return render(request, 'payments/status.html', {'booking': booking, 'phase': phase, 'error': str(exc), 'transaction': payment})
 
-    transaction.provider_reference = response.get('CheckoutRequestID') or response.get('MerchantRequestID')
-    transaction.raw_response = response
-    transaction.status = (
+    payment.checkout_request_id = response.get('CheckoutRequestID', '')
+    payment.merchant_request_id = response.get('MerchantRequestID', '')
+    payment.provider_reference = payment.checkout_request_id or payment.merchant_request_id or None
+    payment.raw_response = response
+    payment.result_code = str(response.get('ResponseCode', ''))
+    payment.result_description = response.get('ResponseDescription', '')
+    payment.status = (
         Transaction.Status.INITIATED
         if str(response.get('ResponseCode', '0')) == '0'
         else Transaction.Status.FAILED
     )
-    transaction.save(update_fields=['provider_reference', 'raw_response', 'status'])
-    if transaction.status == Transaction.Status.FAILED:
-        return render(request, 'payments/status.html', {'booking': booking, 'phase': phase, 'error': response.get('ResponseDescription', 'M-Pesa could not start the payment.')})
-    return render(request, 'payments/status.html', {'booking': booking, 'phase': phase, 'message': 'Payment request sent. Check your phone to approve it.'})
+    payment.save(update_fields=[
+        'checkout_request_id', 'merchant_request_id', 'provider_reference', 'raw_response',
+        'result_code', 'result_description', 'status',
+    ])
+    if payment.status == Transaction.Status.FAILED:
+        return render(request, 'payments/status.html', {'booking': booking, 'phase': phase, 'error': payment.result_description or 'M-Pesa could not start the payment.', 'transaction': payment})
+    return render(request, 'payments/status.html', {
+        'booking': booking,
+        'phase': phase,
+        'message': 'Payment request sent. Check your phone to approve it.',
+        'transaction': payment,
+    })
 
 
 @login_required
@@ -114,6 +132,26 @@ def invoice_detail(request, booking_id):
     return render(request, 'payments/invoice.html', {'booking': booking, 'invoice': invoice})
 
 
+@login_required
+@require_GET
+def payment_status(request, transaction_id):
+    payment = get_object_or_404(
+        Transaction.objects.select_related('invoice__booking'),
+        pk=transaction_id,
+        payer=request.user,
+    )
+    terminal = payment.status in (Transaction.Status.SUCCESS, Transaction.Status.FAILED)
+    return JsonResponse({
+        'status': payment.status,
+        'status_label': payment.get_status_display(),
+        'result_description': payment.result_description,
+        'receipt_number': payment.receipt_number,
+        'terminal': terminal,
+        'success': payment.status == Transaction.Status.SUCCESS,
+        'booking_url': f'/bookings/{payment.invoice.booking_id}/',
+    })
+
+
 def _callback_is_authorized(request):
     expected = getattr(settings, 'MPESA_CALLBACK_TOKEN', '')
     return not expected or request.GET.get('token') == expected or request.headers.get('X-Pwmuziki-Callback-Token') == expected
@@ -131,14 +169,24 @@ def mpesa_callback(request):
         return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Invalid callback payload'}, status=400)
 
     checkout_id = callback.get('CheckoutRequestID')
+    payout_payment_id = None
     with transaction.atomic():
-        transaction = Transaction.objects.select_for_update().select_related('invoice', 'invoice__booking').filter(provider_reference=checkout_id).first()
-        if not transaction:
+        payment = Transaction.objects.select_for_update().select_related('invoice', 'invoice__booking').filter(
+            checkout_request_id=checkout_id,
+        ).first()
+        if not payment:
+            payment = Transaction.objects.select_for_update().select_related('invoice', 'invoice__booking').filter(
+                provider_reference=checkout_id,
+            ).first()
+        if not payment:
             return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback acknowledged'})
-        if transaction.status == Transaction.Status.SUCCESS:
+        if payment.status == Transaction.Status.SUCCESS:
             return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback already processed'})
 
-        transaction.raw_response = payload
+        payment.raw_response = payload
+        payment.callback_received_at = timezone.now()
+        payment.result_code = str(callback.get('ResultCode', ''))
+        payment.result_description = callback.get('ResultDesc', '')
         metadata = {
             item.get('Name'): item.get('Value')
             for item in callback.get('CallbackMetadata', {}).get('Item', [])
@@ -149,15 +197,15 @@ def mpesa_callback(request):
         except (KeyError, TypeError, ValueError):
             callback_amount = None
         receipt_number = str(metadata.get('MpesaReceiptNumber') or '')
-        amount_matches = callback_amount is not None and callback_amount == transaction.amount
+        amount_matches = callback_amount is not None and callback_amount == payment.amount
         successful = str(callback.get('ResultCode')) == '0'
         if successful and amount_matches and receipt_number:
-            transaction.status = Transaction.Status.SUCCESS
-            transaction.receipt_number = receipt_number
-            invoice = transaction.invoice
-            if transaction.purpose == Transaction.Purpose.RESERVATION:
+            payment.status = Transaction.Status.SUCCESS
+            payment.receipt_number = receipt_number
+            invoice = payment.invoice
+            if payment.purpose == Transaction.Purpose.RESERVATION:
                 invoice.reservation_paid = True
-                invoice.reservation_amount = transaction.amount
+                invoice.reservation_amount = payment.amount
                 invoice.save(update_fields=['reservation_paid', 'reservation_amount'])
                 booking = invoice.booking
                 booking.reservation_status = ReservationStatus.HELD
@@ -168,18 +216,28 @@ def mpesa_callback(request):
             else:
                 invoice.balance_paid = True
                 invoice.is_paid = True
-                invoice.balance_amount = transaction.amount
+                invoice.balance_amount = payment.amount
                 invoice.save(update_fields=['balance_paid', 'is_paid', 'balance_amount'])
                 booking = invoice.booking
                 booking.balance_paid_at = timezone.now()
                 booking.status = BookingStatus.COMPLETED
                 booking.save(update_fields=('balance_paid_at', 'status', 'updated_at'))
-                dispatch_payout(payout=create_payout(payment=transaction))
+                payout_payment_id = payment.pk
         else:
-            transaction.status = Transaction.Status.FAILED
+            payment.status = Transaction.Status.FAILED
             if successful:
-                transaction.raw_response = {**payload, 'validation_error': 'Callback amount or receipt did not match the initiated transaction.'}
-        transaction.save(update_fields=['status', 'raw_response', 'receipt_number'])
+                payment.result_description = 'Callback amount or receipt did not match the initiated transaction.'
+                payment.raw_response = {**payload, 'validation_error': payment.result_description}
+        payment.save(update_fields=[
+            'status', 'raw_response', 'receipt_number', 'result_code',
+            'result_description', 'callback_received_at',
+        ])
+    if payout_payment_id:
+        try:
+            dispatch_payout(payout=create_payout(payment=Transaction.objects.get(pk=payout_payment_id)))
+        except (RuntimeError, OSError, ValueError):
+            # The payment remains successful; payout status records the operational failure.
+            pass
     return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback processed'})
 
 
@@ -193,8 +251,12 @@ def mpesa_b2c_result(request):
         result = payload['Result']
     except (ValueError, KeyError, TypeError):
         return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Invalid B2C result payload'}, status=400)
-    reference = result.get('ConversationID') or result.get('OriginatorConversationID')
-    payout = Payout.objects.filter(provider_reference=reference).first()
+    references = [
+        result.get('ConversationID'),
+        result.get('OriginatorConversationID'),
+        result.get('TransactionID'),
+    ]
+    payout = Payout.objects.filter(provider_reference__in=[ref for ref in references if ref]).first()
     if not payout:
         return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Result acknowledged'})
     if payout.status == Payout.Status.PAID:
@@ -217,4 +279,19 @@ def mpesa_b2c_result(request):
 def mpesa_b2c_timeout(request):
     if not _callback_is_authorized(request):
         return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Unauthorized callback'}, status=403)
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+        result = payload.get('Result', {})
+    except (ValueError, TypeError):
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Invalid B2C timeout payload'}, status=400)
+    references = [
+        result.get('ConversationID'),
+        result.get('OriginatorConversationID'),
+    ]
+    payout = Payout.objects.filter(provider_reference__in=[ref for ref in references if ref]).first()
+    if payout and payout.status != Payout.Status.PAID:
+        payout.status = Payout.Status.FAILED
+        payout.failure_reason = result.get('ResultDesc', 'Daraja payout timed out.')
+        payout.raw_response = payload
+        payout.save(update_fields=['status', 'failure_reason', 'raw_response'])
     return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Timeout acknowledged'})

@@ -193,7 +193,7 @@ MPESA_STK_URL = os.environ.get(
 )
 MPESA_TRANSACTION_TYPE = os.environ.get('MPESA_TRANSACTION_TYPE', 'CustomerPayBillOnline')
 MPESA_PARTY_B = os.environ.get('MPESA_PARTY_B', MPESA_SHORTCODE)
-MPESA_ACCOUNT_REFERENCE = os.environ.get('MPESA_ACCOUNT_REFERENCE', 'Pwmuziki')
+MPESA_ACCOUNT_REFERENCE = os.environ.get('MPESA_ACCOUNT_REFERENCE', 'AuraCity')
 MPESA_QUERY_URL = os.environ.get(
     'MPESA_QUERY_URL',
     'https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query'
@@ -226,4 +226,4 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 SERVER_EMAIL = os.environ.get('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 EMAIL_TIMEOUT = 20
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000').rstrip('/')
-BRAND_NAME = 'Pwmuziki'
+BRAND_NAME = 'AuraCity'

@@ -1,5 +1,56 @@
 {% extends 'base.html' %}
-{% block title %}Payment update | Pwmuziki{% endblock %}
+{% block title %}Payment update | AuraCity{% endblock %}
 {% block content %}
-<section class="center-state"><span class="empty-stamp">{% if error %}!{% else %}P{% endif %}</span><p class="eyebrow">{% if error %}Payment needs attention{% else %}Payment update{% endif %}</p><h1>{% if error %}We couldn’t start that payment.{% else %}You’re all set for now.{% endif %}</h1><p>{{ error|default:message }}</p><div class="center-actions"><a href="{% url 'booking_detail' booking.pk %}" class="button button-primary">Back to booking <span aria-hidden="true">→</span></a>{% if error %}<a href="{% if phase == 'balance' %}{% url 'payment_balance' booking.pk %}{% else %}{% url 'payment_reservation' booking.pk %}{% endif %}" class="text-link">Try again</a>{% endif %}</div></section>
+<section class="center-state payment-state" data-payment-status-url="{% if transaction and transaction.status == 'initiated' %}{% url 'payment_status' transaction.pk %}{% endif %}" data-payment-phase="{{ phase }}">
+    <span class="empty-stamp" data-payment-mark>{% if error %}!{% else %}A{% endif %}</span>
+    <p class="eyebrow" data-payment-eyebrow>{% if error %}Payment needs attention{% else %}Payment update{% endif %}</p>
+    <h1 data-payment-title>{% if error %}We couldn’t start that payment.{% elif transaction and transaction.status == 'initiated' %}Confirm on your phone.{% else %}You’re all set for now.{% endif %}</h1>
+    <p data-payment-message>{{ error|default:message }}</p>
+    {% if transaction and transaction.status == 'initiated' %}
+        <div class="payment-progress" aria-live="polite"><span class="payment-spinner" aria-hidden="true"></span><span>Waiting for Safaricom to confirm your payment…</span></div>
+    {% endif %}
+    <div class="center-actions">
+        <a href="{% url 'booking_detail' booking.pk %}" class="button button-primary">Back to booking <span aria-hidden="true">→</span></a>
+        {% if error %}<a href="{% if phase == 'balance' %}{% url 'payment_balance' booking.pk %}{% else %}{% url 'payment_reservation' booking.pk %}{% endif %}" class="text-link">Try again</a>{% endif %}
+    </div>
+</section>
+{% if transaction and transaction.status == 'initiated' %}
+<script>
+    (() => {
+        const state = document.querySelector('.payment-state');
+        const url = state?.dataset.paymentStatusUrl;
+        if (!url) return;
+        const title = state.querySelector('[data-payment-title]');
+        const message = state.querySelector('[data-payment-message]');
+        const eyebrow = state.querySelector('[data-payment-eyebrow]');
+        const mark = state.querySelector('[data-payment-mark]');
+        const progress = state.querySelector('.payment-progress');
+        const poll = async () => {
+            try {
+                const response = await fetch(url, {headers: {'Accept': 'application/json'}});
+                if (!response.ok) throw new Error('status');
+                const data = await response.json();
+                if (!data.terminal) return;
+                if (data.success) {
+                    eyebrow.textContent = 'Payment confirmed';
+                    title.textContent = 'Your date is secure.';
+                    message.textContent = data.receipt_number ? `M-Pesa receipt: ${data.receipt_number}` : 'Your payment has been received.';
+                    mark.textContent = '✓';
+                } else {
+                    eyebrow.textContent = 'Payment needs attention';
+                    title.textContent = 'The payment was not completed.';
+                    message.textContent = data.result_description || 'Please try again from your booking.';
+                    mark.textContent = '!';
+                }
+                progress?.remove();
+                window.clearInterval(timer);
+            } catch (error) {
+                // Keep polling; the callback can arrive while the preview connection is intermittent.
+            }
+        };
+        const timer = window.setInterval(poll, 3500);
+        poll();
+    })();
+</script>
+{% endif %}
 {% endblock %}

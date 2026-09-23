@@ -1,7 +1,7 @@
 {
-  "name": "Pwmuziki — photographs with feeling",
-  "short_name": "Pwmuziki",
-  "description": "Find photographers whose work feels like you.",
+  "name": "AuraCity — photography made personal",
+  "short_name": "AuraCity",
+  "description": "Choose photography packages and photographers for the moments that matter.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

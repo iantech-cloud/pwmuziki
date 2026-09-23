@@ -23,9 +23,9 @@ def send_branded_email(*, subject, recipient, template, context=None, text_body=
 
 def send_welcome_email(user):
     return send_branded_email(
-        subject='Welcome to Pwmuziki',
+        subject='Welcome to AuraCity',
         recipient=user.email,
         template='welcome',
         context={'user': user},
-        text_body=f'Welcome to Pwmuziki, {user.get_short_name() or user.username}. Find photography that feels like you at {settings.SITE_URL}.',
+        text_body=f'Welcome to AuraCity, {user.get_short_name() or user.username}. Find photography that feels like you at {settings.SITE_URL}.',
     )

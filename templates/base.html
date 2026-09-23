@@ -4,28 +4,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Pwmuziki connects you with photographers whose work feels like you.">
+    <meta name="description" content="AuraCity connects you with thoughtful photographers and packages for the moments that matter.">
+    <meta property="og:site_name" content="AuraCity">
+    <meta property="og:title" content="{% block og_title %}AuraCity — photography made personal{% endblock %}">
+    <meta property="og:description" content="Choose a photography package, find your visual match, and book with confidence.">
+    <meta property="og:type" content="website">
     <meta name="theme-color" content="#f5efe7">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
     <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{% static 'favicon.svg' %}">
-    <title>{% block title %}Pwmuziki — photographs with feeling{% endblock %}</title>
+    <title>{% block title %}AuraCity — photography made personal{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'style.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <header class="site-header">
         <nav class="navbar shell" aria-label="Main navigation">
-            <a href="{% url 'home' %}" class="logo" aria-label="Pwmuziki home">
-                <img src="{% static 'logo.svg' %}" alt="Pwmuziki" width="156" height="38">
+            <a href="{% url 'home' %}" class="logo" aria-label="AuraCity home">
+                <img src="{% static 'logo.svg' %}" alt="AuraCity" width="156" height="38">
             </a>
             <button class="mobile-menu" onclick="toggleMenu()" aria-label="Toggle navigation" aria-expanded="false">
                 <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
             </button>
             <div class="nav-links" id="navLinks">
-                <a href="{% url 'home' %}">Explore</a>
+                <a href="{% url 'home' %}#packages">Packages</a>
+                <a href="{% url 'home' %}#photographers">Photographers</a>
                 <a href="{% url 'gallery' %}">Gallery</a>
                 {% if user.is_authenticated %}
                     <a href="{% url 'booking_list' %}">My bookings</a>
@@ -59,12 +64,12 @@
     <footer class="site-footer">
         <div class="shell footer-content">
             <div class="footer-brand">
-                <a href="{% url 'home' %}" class="logo" aria-label="Pwmuziki home"><img src="{% static 'logo.svg' %}" alt="Pwmuziki" width="156" height="38"></a>
+                <a href="{% url 'home' %}" class="logo" aria-label="AuraCity home"><img src="{% static 'logo.svg' %}" alt="AuraCity" width="156" height="38"></a>
                 <p>Photography for the moments<br>you want to keep close.</p>
             </div>
             <div class="footer-note">
                 <span>Made for real stories</span>
-                <span>© 2026 Pwmuziki</span>
+                <span>© 2026 AuraCity</span>
             </div>
         </div>
     </footer>

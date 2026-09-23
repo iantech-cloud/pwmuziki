@@ -37,19 +37,19 @@ def create_payout(*, payment):
 
 @transaction.atomic
 def dispatch_payout(*, payout):
-    if payout.status == Payout.Status.PAID:
+    if payout.status in (Payout.Status.PAID, Payout.Status.PROCESSING):
         return payout
     booking = payout.transaction.invoice.booking
     if payout.transaction.purpose == Transaction.Purpose.RESERVATION and booking.reservation_status != 'released':
         raise ValueError('Reservation escrow can only be paid after client arrival confirmation.')
     phone_number = getattr(getattr(payout.photographer, 'profile', None), 'phone_number', '')
-    if not phone_number:
-        raise ValueError('The photographer must add a payout phone number to their profile.')
     try:
+        if not phone_number:
+            raise ValueError('The photographer must add a payout phone number to their profile.')
         response = initiate_b2c_payout(
             phone_number=phone_number,
             amount=payout.amount,
-            remarks=f'Pwmuziki payout for booking {booking.pk}',
+            remarks=f'AuraCity payout for booking {booking.pk}',
             occasion=payout.transaction.purpose,
         )
     except (RuntimeError, OSError, KeyError, ValueError) as exc:

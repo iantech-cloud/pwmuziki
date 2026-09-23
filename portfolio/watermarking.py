@@ -16,7 +16,7 @@ def branded_copy(image_field):
             font = ImageFont.load_default()
 
         draw = ImageDraw.Draw(image, 'RGBA')
-        label = 'P  pwmuziki'
+        label = 'A  AuraCity'
         left, top, right, bottom = draw.textbbox((0, 0), label, font=font)
         padding = max(10, width // 90)
         box_width = right - left + padding * 2
