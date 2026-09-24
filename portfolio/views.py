@@ -1,13 +1,81 @@
+import mimetypes
+import os
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Prefetch
-from django.http import Http404
+from django.conf import settings
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from urllib.parse import urlparse
 from django.utils import timezone
+from django.utils._os import safe_join
 
 from .forms import AlbumForm, DeliveryPhotoForm, DeliverySettingsForm, PhotoForm
 from .models import Album, DeliveryPhoto, Photo
-from users.models import GalleryAccess
+from users.models import GalleryAccess, Profile
+
+
+def media_file(request, path):
+    """Serve uploads only when the related portfolio or booking permits access."""
+    media_path = path.lstrip('/')
+    try:
+        absolute_path = safe_join(settings.MEDIA_ROOT, media_path)
+    except ValueError as exc:
+        raise Http404 from exc
+    if not os.path.isfile(absolute_path):
+        raise Http404
+
+    photo = Photo.objects.filter(
+        Q(image=media_path) | Q(branded_image=media_path),
+    ).select_related('album__photographer').first()
+    delivery_photo = DeliveryPhoto.objects.filter(
+        image=media_path,
+    ).select_related('booking__client', 'booking__photographer').first()
+    profile = Profile.objects.filter(avatar=media_path).select_related('user').first()
+
+    is_public = False
+    is_authorized = False
+    if photo:
+        is_public = photo.album.is_public and photo.album.photographer.is_active
+        is_authorized = is_public or (
+            request.user.is_authenticated
+            and request.user.id == photo.album.photographer_id
+        )
+        if (
+            not is_authorized
+            and request.user.is_authenticated
+            and request.user.role == 'client'
+        ):
+            is_authorized = GalleryAccess.objects.filter(
+                album=photo.album,
+                client=request.user,
+                is_published=True,
+            ).filter(
+                Q(expires_at__isnull=True) | Q(expires_at__gte=timezone.now()),
+            ).exists()
+    elif delivery_photo:
+        is_authorized = request.user.is_authenticated and request.user.id in {
+            delivery_photo.booking.client_id,
+            delivery_photo.booking.photographer_id,
+        }
+    elif profile:
+        is_public = profile.user.role == 'photographer' and profile.user.is_active
+        is_authorized = is_public or (
+            request.user.is_authenticated and request.user.id == profile.user_id
+        )
+    else:
+        raise Http404
+
+    if not is_authorized:
+        raise Http404
+
+    response = FileResponse(
+        open(absolute_path, 'rb'),
+        content_type=mimetypes.guess_type(absolute_path)[0] or 'application/octet-stream',
+    )
+    response['Content-Disposition'] = f'inline; filename="{os.path.basename(media_path)}"'
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['Cache-Control'] = 'public, max-age=3600' if is_public else 'private, no-store'
+    return response
 
 
 def gallery(request):

@@ -15,12 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.conf import settings
-from django.conf.urls.static import static
 from django.urls import include, path
+from portfolio.views import media_file
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('media/<path:path>', media_file, name='media_file'),
     path('', include('users.urls')),
     path('bookings/', include('bookings.urls')),
     path('portfolio/', include('portfolio.urls')),
@@ -31,6 +31,3 @@ urlpatterns = [
 admin.site.site_header = 'AuraCity administration'
 admin.site.site_title = 'AuraCity admin'
 admin.site.index_title = 'Operations dashboard'
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

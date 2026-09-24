@@ -1,0 +1,1 @@
+- [Protected uploaded media](protected-media.md) — route every uploaded image through model-aware authorization; generic media serving can bypass private gallery access.
