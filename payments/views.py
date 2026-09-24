@@ -3,6 +3,7 @@ import json
 from uuid import uuid4
 
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -14,7 +15,7 @@ from django.views.decorators.http import require_GET, require_POST
 from bookings.models import Booking, BookingStatus, ReservationStatus
 from .models import Invoice, Payout, Transaction
 from .domain import create_payout, dispatch_payout
-from .services import initiate_stk_push, normalize_phone_number
+from .services import initiate_stk_push, normalize_phone_number, query_stk_push
 
 
 def _invoice_for(booking):
@@ -77,7 +78,7 @@ def payment_start(request, booking_id, phase='reservation'):
         response = initiate_stk_push(
             phone_number=normalized_phone,
             amount=amount,
-            account_reference=invoice.number,
+            account_reference=f'AUR{booking.pk}{"R" if phase == "reservation" else "B"}'[:12],
             description=f'AuraCity booking {booking.pk}',
         )
     except (RuntimeError, OSError, KeyError, ValueError) as exc:
@@ -93,11 +94,14 @@ def payment_start(request, booking_id, phase='reservation'):
     payment.raw_response = response
     payment.result_code = str(response.get('ResponseCode', ''))
     payment.result_description = response.get('ResponseDescription', '')
+    request_started = str(response.get('ResponseCode', '0')) == '0'
     payment.status = (
         Transaction.Status.INITIATED
-        if str(response.get('ResponseCode', '0')) == '0'
+        if request_started and payment.checkout_request_id
         else Transaction.Status.FAILED
     )
+    if request_started and not payment.checkout_request_id:
+        payment.result_description = 'Daraja accepted the request but did not return a checkout ID. Please try again.'
     payment.save(update_fields=[
         'checkout_request_id', 'merchant_request_id', 'provider_reference', 'raw_response',
         'result_code', 'result_description', 'status',
@@ -140,6 +144,37 @@ def payment_status(request, transaction_id):
         pk=transaction_id,
         payer=request.user,
     )
+    if payment.status == Transaction.Status.INITIATED and payment.checkout_request_id:
+        query_key = f'mpesa-status-query:{payment.pk}'
+        if cache.add(query_key, True, timeout=8):
+            try:
+                query_response = query_stk_push(checkout_request_id=payment.checkout_request_id)
+            except (RuntimeError, OSError, KeyError, ValueError) as exc:
+                query_response = {'query_error': str(exc)}
+            else:
+                payment.raw_response = {
+                    **(payment.raw_response or {}),
+                    'last_query': query_response,
+                }
+                query_result_code = query_response.get('ResultCode')
+                if query_result_code not in (None, '', 0, '0'):
+                    payment.status = Transaction.Status.FAILED
+                    payment.result_code = str(query_result_code)
+                    payment.result_description = query_response.get(
+                        'ResultDesc',
+                        'M-Pesa did not complete the payment.',
+                    )
+                else:
+                    payment.result_description = query_response.get(
+                        'ResultDesc',
+                        payment.result_description,
+                    )
+                payment.save(update_fields=[
+                    'raw_response', 'status', 'result_code', 'result_description',
+                ])
+            if query_response.get('query_error'):
+                payment.result_description = payment.result_description or query_response['query_error']
+        payment.refresh_from_db()
     terminal = payment.status in (Transaction.Status.SUCCESS, Transaction.Status.FAILED)
     return JsonResponse({
         'status': payment.status,
@@ -154,7 +189,11 @@ def payment_status(request, transaction_id):
 
 def _callback_is_authorized(request):
     expected = getattr(settings, 'MPESA_CALLBACK_TOKEN', '')
-    return not expected or request.GET.get('token') == expected or request.headers.get('X-Pwmuziki-Callback-Token') == expected
+    if not expected:
+        return settings.DEBUG or settings.MPESA_ENVIRONMENT != 'production'
+    supplied = request.GET.get('token') or request.headers.get('X-AuraCity-Callback-Token') or request.headers.get('X-Pwmuziki-Callback-Token')
+    import hmac
+    return bool(supplied) and hmac.compare_digest(supplied, expected)
 
 
 @csrf_exempt
@@ -256,21 +295,36 @@ def mpesa_b2c_result(request):
         result.get('OriginatorConversationID'),
         result.get('TransactionID'),
     ]
-    payout = Payout.objects.filter(provider_reference__in=[ref for ref in references if ref]).first()
-    if not payout:
-        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Result acknowledged'})
-    if payout.status == Payout.Status.PAID:
-        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Result already processed'})
-    payout.raw_response = payload
-    if str(result.get('ResultCode')) == '0':
-        payout.status = Payout.Status.PAID
-        payout.paid_at = timezone.now()
-        payout.failure_reason = ''
+    with transaction.atomic():
+        payout = Payout.objects.select_for_update().filter(
+            provider_reference__in=[ref for ref in references if ref],
+        ).first()
+        if not payout:
+            return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Result acknowledged'})
+        if payout.status == Payout.Status.PAID:
+            return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Result already processed'})
+        payout.raw_response = payload
+        result_amount = result.get('ResultParameters', {}).get('ResultParameter', [])
+        amount_item = next(
+            (item for item in result_amount if item.get('Key') in ('TransactionAmount', 'Amount')),
+            None,
+        )
+        try:
+            callback_amount = Decimal(str(amount_item.get('Value'))) if amount_item else None
+        except (TypeError, ValueError):
+            callback_amount = None
+        amount_mismatch = amount_item is not None and callback_amount != payout.amount
+        if str(result.get('ResultCode')) == '0' and amount_mismatch:
+            payout.status = Payout.Status.FAILED
+            payout.failure_reason = 'Daraja returned a payout amount that did not match the requested amount.'
+        elif str(result.get('ResultCode')) == '0':
+            payout.status = Payout.Status.PAID
+            payout.paid_at = timezone.now()
+            payout.failure_reason = ''
+        else:
+            payout.status = Payout.Status.FAILED
+            payout.failure_reason = result.get('ResultDesc', 'Daraja payout failed.')
         payout.save(update_fields=['status', 'paid_at', 'failure_reason', 'raw_response'])
-    else:
-        payout.status = Payout.Status.FAILED
-        payout.failure_reason = result.get('ResultDesc', 'Daraja payout failed.')
-        payout.save(update_fields=['status', 'failure_reason', 'raw_response'])
     return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Result processed'})
 
 

@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal, InvalidOperation
 import json
 import re
+import socket
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -26,8 +27,9 @@ def _request(url, *, method='GET', headers=None, payload=None):
             detail = ''
         suffix = f' {detail}' if detail else ''
         raise RuntimeError(f'Daraja returned HTTP {exc.code}.{suffix}') from exc
-    except URLError as exc:
-        raise RuntimeError(f'Could not reach Daraja: {exc.reason}') from exc
+    except (URLError, socket.timeout, TimeoutError) as exc:
+        reason = getattr(exc, 'reason', None) or 'the request timed out'
+        raise RuntimeError(f'Could not reach Daraja: {reason}') from exc
 
 def mpesa_access_token():
     if not all([
@@ -36,7 +38,17 @@ def mpesa_access_token():
     ]):
         raise RuntimeError('Daraja is not configured yet. Add MPESA_CONSUMER_KEY and MPESA_CONSUMER_SECRET.')
     credentials = f'{settings.MPESA_CONSUMER_KEY}:{settings.MPESA_CONSUMER_SECRET}'.encode()
-    return _request(settings.MPESA_AUTH_URL, headers={'Authorization': f'Basic {base64.b64encode(credentials).decode()}'})['access_token']
+    response = _request(
+        settings.MPESA_AUTH_URL,
+        headers={
+            'Accept': 'application/json',
+            'Authorization': f'Basic {base64.b64encode(credentials).decode()}',
+        },
+    )
+    access_token = response.get('access_token')
+    if not access_token:
+        raise RuntimeError('Daraja did not return an access token.')
+    return access_token
 
 
 def normalize_phone_number(phone_number):
@@ -52,12 +64,16 @@ def normalize_phone_number(phone_number):
 
 def initiate_stk_push(*, phone_number, amount, account_reference, description):
     phone_number = normalize_phone_number(phone_number)
-    if not settings.MPESA_CALLBACK_URL:
+    callback_parts = urlsplit(settings.MPESA_CALLBACK_URL or '')
+    if callback_parts.scheme != 'https' or not callback_parts.netloc:
         raise RuntimeError('Daraja callback is not configured. Set MPESA_CALLBACK_URL to a public HTTPS endpoint.')
     try:
-        amount = Decimal(str(amount)).quantize(Decimal('1'))
+        decimal_amount = Decimal(str(amount))
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError('Payment amount must be a valid number.') from exc
+    if decimal_amount != decimal_amount.quantize(Decimal('1')):
+        raise ValueError('M-Pesa payments must use whole Kenyan shillings.')
+    amount = decimal_amount.quantize(Decimal('1'))
     if amount <= 0:
         raise ValueError('Payment amount must be greater than zero.')
     if not all((settings.MPESA_SHORTCODE, settings.MPESA_PASSKEY)):
@@ -122,6 +138,13 @@ def initiate_b2c_payout(*, phone_number, amount, remarks, occasion):
             'B2C payouts are not configured. Add MPESA_B2C_INITIATOR_NAME, '
             'MPESA_B2C_SECURITY_CREDENTIAL, MPESA_B2C_RESULT_URL, and MPESA_B2C_TIMEOUT_URL.'
         )
+    try:
+        decimal_amount = Decimal(str(amount))
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        raise ValueError('Payout amount must be a valid number.') from exc
+    if decimal_amount != decimal_amount.quantize(Decimal('1')):
+        raise ValueError('Payouts must use whole Kenyan shillings.')
+    amount = decimal_amount.quantize(Decimal('1'))
     if amount <= 0:
         raise ValueError('Payout amount must be greater than zero.')
     payload = {

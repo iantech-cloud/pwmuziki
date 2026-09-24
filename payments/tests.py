@@ -1,12 +1,13 @@
 import json
 from decimal import Decimal
+from unittest.mock import patch
 
-from django.test import SimpleTestCase, TestCase
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from bookings.models import Booking, BookingStatus, ReservationStatus
 from users.models import User
-from .models import Invoice, Transaction
-from .services import normalize_phone_number
+from .models import Invoice, Payout, Transaction
+from .services import initiate_stk_push, normalize_phone_number
 
 
 class DarajaPhoneTests(SimpleTestCase):
@@ -17,6 +18,42 @@ class DarajaPhoneTests(SimpleTestCase):
     def test_rejects_non_kenyan_number(self):
         with self.assertRaises(ValueError):
             normalize_phone_number('+1 202 555 0199')
+
+    @override_settings(
+        MPESA_CALLBACK_URL='https://example.com/payments/mpesa/callback/',
+        MPESA_SHORTCODE='123456',
+        MPESA_PASSKEY='passkey',
+        MPESA_PARTY_B='123456',
+    )
+    @patch('payments.services.mpesa_access_token', return_value='token')
+    @patch('payments.services._request', return_value={'CheckoutRequestID': 'ws_CO_TEST'})
+    def test_stk_payload_uses_public_callback_and_whole_shilling_amount(self, request, access_token):
+        response = initiate_stk_push(
+            phone_number='0712345678',
+            amount=Decimal('2500.00'),
+            account_reference='AUR1R',
+            description='AuraCity booking 1',
+        )
+
+        self.assertEqual(response['CheckoutRequestID'], 'ws_CO_TEST')
+        payload = request.call_args.kwargs['payload']
+        self.assertEqual(payload['Amount'], 2500)
+        self.assertEqual(payload['CallBackURL'], 'https://example.com/payments/mpesa/callback/')
+        access_token.assert_called_once()
+
+    @override_settings(
+        MPESA_CALLBACK_URL='https://example.com/payments/mpesa/callback/',
+        MPESA_SHORTCODE='123456',
+        MPESA_PASSKEY='passkey',
+    )
+    def test_stk_rejects_decimal_kes(self):
+        with self.assertRaises(ValueError):
+            initiate_stk_push(
+                phone_number='0712345678',
+                amount=Decimal('2500.50'),
+                account_reference='AUR1R',
+                description='AuraCity booking 1',
+            )
 
 
 class DarajaCallbackTests(TestCase):
@@ -105,3 +142,87 @@ class DarajaCallbackTests(TestCase):
         self.assertTrue(self.invoice.is_paid)
         self.assertTrue(self.invoice.balance_paid)
         self.assertEqual(self.booking.status, BookingStatus.COMPLETED)
+
+    def test_duplicate_success_callback_is_idempotent(self):
+        transaction = Transaction.objects.create(
+            invoice=self.invoice,
+            payer=self.booking.client,
+            amount=Decimal('2000'),
+            purpose=Transaction.Purpose.RESERVATION,
+            provider_reference='ws_CO_DUPLICATE',
+        )
+        self.booking.status = BookingStatus.RESERVATION_DUE
+        self.booking.save(update_fields=('status', 'updated_at'))
+
+        self.assertEqual(self.callback(transaction).status_code, 200)
+        self.assertEqual(self.callback(transaction).status_code, 200)
+        transaction.refresh_from_db()
+        self.assertEqual(transaction.status, Transaction.Status.SUCCESS)
+        self.assertEqual(Transaction.objects.filter(pk=transaction.pk).count(), 1)
+
+    @override_settings(MPESA_CALLBACK_TOKEN='callback-secret', MPESA_ENVIRONMENT='production')
+    def test_production_callback_requires_token(self):
+        response = self.client.post(
+            '/payments/mpesa/callback/',
+            data=json.dumps({'Body': {'stkCallback': {}}}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    @patch('payments.views.query_stk_push', return_value={'ResultCode': '1032', 'ResultDesc': 'Request canceled by user'})
+    def test_payment_status_queries_pending_stk_and_marks_terminal_failure(self, query):
+        transaction = Transaction.objects.create(
+            invoice=self.invoice,
+            payer=self.booking.client,
+            amount=Decimal('2000'),
+            purpose=Transaction.Purpose.RESERVATION,
+            checkout_request_id='ws_CO_QUERY',
+            provider_reference='ws_CO_QUERY',
+        )
+        self.client.force_login(self.booking.client)
+
+        response = self.client.get(f'/payments/transaction/{transaction.pk}/status/')
+
+        self.assertEqual(response.status_code, 200)
+        transaction.refresh_from_db()
+        self.assertEqual(transaction.status, Transaction.Status.FAILED)
+        query.assert_called_once_with(checkout_request_id='ws_CO_QUERY')
+
+    def test_b2c_result_marks_matching_payout_paid(self):
+        transaction = Transaction.objects.create(
+            invoice=self.invoice,
+            payer=self.booking.client,
+            amount=Decimal('8000'),
+            purpose=Transaction.Purpose.BALANCE,
+            provider_reference='ws_CO_B2C_SOURCE',
+            status=Transaction.Status.SUCCESS,
+        )
+        payout = Payout.objects.create(
+            transaction=transaction,
+            photographer=self.booking.photographer,
+            amount=Decimal('8000'),
+            status=Payout.Status.PROCESSING,
+            provider_reference='conv-123',
+        )
+
+        response = self.client.post(
+            '/payments/mpesa/b2c/result/',
+            data=json.dumps({
+                'Result': {
+                    'ResultCode': 0,
+                    'ResultDesc': 'The service request is processed successfully.',
+                    'ConversationID': 'conv-123',
+                    'ResultParameters': {
+                        'ResultParameter': [
+                            {'Key': 'TransactionAmount', 'Value': 8000},
+                        ],
+                    },
+                },
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payout.refresh_from_db()
+        self.assertEqual(payout.status, Payout.Status.PAID)

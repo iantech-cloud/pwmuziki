@@ -65,6 +65,15 @@ def dispatch_payout(*, payout):
         or response.get('TransactionID')
         or ''
     )
+    if str(response.get('ResponseCode', '0')) != '0' or not payout.provider_reference:
+        payout.status = Payout.Status.FAILED
+        payout.failure_reason = response.get(
+            'ResponseDescription',
+            'Daraja did not accept the payout request.',
+        )
+        payout.requested_at = timezone.now()
+        payout.save(update_fields=['status', 'provider_reference', 'failure_reason', 'requested_at'])
+        return payout
     payout.failure_reason = ''
     payout.requested_at = timezone.now()
     payout.save(update_fields=['status', 'provider_reference', 'failure_reason', 'requested_at'])

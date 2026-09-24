@@ -172,12 +172,20 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+SITE_URL = os.environ.get('SITE_URL', '').rstrip('/')
+if not SITE_URL:
+    replit_domain = os.environ.get('REPLIT_DEV_DOMAIN', '').strip()
+    SITE_URL = f'https://{replit_domain}' if replit_domain else 'http://localhost:5000'
+
 MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox').lower()
 MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', '')
 MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', '')
 MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '')
 MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', '')
-MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', '')
+MPESA_CALLBACK_URL = os.environ.get(
+    'MPESA_CALLBACK_URL',
+    f'{SITE_URL}/payments/mpesa/callback/' if SITE_URL.startswith('https://') else '',
+)
 MPESA_CALLBACK_TOKEN = os.environ.get('MPESA_CALLBACK_TOKEN', '')
 MPESA_AUTH_URL = os.environ.get(
     'MPESA_AUTH_URL',
@@ -209,8 +217,14 @@ MPESA_B2C_URL = os.environ.get(
 MPESA_B2C_COMMAND_ID = os.environ.get('MPESA_B2C_COMMAND_ID', 'BusinessPayment')
 MPESA_B2C_INITIATOR_NAME = os.environ.get('MPESA_B2C_INITIATOR_NAME', '')
 MPESA_B2C_SECURITY_CREDENTIAL = os.environ.get('MPESA_B2C_SECURITY_CREDENTIAL', '')
-MPESA_B2C_RESULT_URL = os.environ.get('MPESA_B2C_RESULT_URL', '')
-MPESA_B2C_TIMEOUT_URL = os.environ.get('MPESA_B2C_TIMEOUT_URL', '')
+MPESA_B2C_RESULT_URL = os.environ.get(
+    'MPESA_B2C_RESULT_URL',
+    f'{SITE_URL}/payments/mpesa/b2c/result/' if SITE_URL.startswith('https://') else '',
+)
+MPESA_B2C_TIMEOUT_URL = os.environ.get(
+    'MPESA_B2C_TIMEOUT_URL',
+    f'{SITE_URL}/payments/mpesa/b2c/timeout/' if SITE_URL.startswith('https://') else '',
+)
 
 
 # Email
@@ -225,5 +239,4 @@ EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 SERVER_EMAIL = os.environ.get('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 EMAIL_TIMEOUT = 20
-SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000').rstrip('/')
 BRAND_NAME = 'AuraCity'
