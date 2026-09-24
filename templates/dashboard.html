@@ -37,7 +37,7 @@
 {% if notifications %}
 <section class="dashboard-notifications" aria-labelledby="notifications-title">
     <div class="notification-heading"><div><p class="eyebrow">Stay in the loop</p><h2 id="notifications-title">Notifications{% if unread_notifications %} <span class="notification-count">{{ unread_notifications }}</span>{% endif %}</h2></div><form method="post" action="{% url 'notifications_read' %}">{% csrf_token %}<button class="text-link notification-mark-read" type="submit">Mark all read</button></form></div>
-    <div class="notification-list">{% for notification in notifications %}<a class="notification-row{% if not notification.is_read %} notification-unread{% endif %}" href="{{ notification.link|default:'#' }}"><span class="notification-dot" aria-hidden="true"></span><span><strong>{{ notification.title }}</strong><small>{{ notification.body }}</small></span><time datetime="{{ notification.created_at|date:'c' }}">{{ notification.created_at|timesince }} ago</time></a>{% endfor %}</div>
+    <div class="notification-list">{% for notification in notifications %}<a class="notification-row{% if not notification.is_read %} notification-unread{% endif %}" href="{{ notification.dashboard_link }}"><span class="notification-dot" aria-hidden="true"></span><span><strong>{{ notification.title }}</strong><small>{{ notification.body }}</small></span><time datetime="{{ notification.created_at|date:'c' }}">{{ notification.created_at|timesince }} ago</time></a>{% endfor %}</div>
 </section>
 {% endif %}
 

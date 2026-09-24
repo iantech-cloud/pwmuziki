@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q, Prefetch
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from urllib.parse import urlparse
@@ -6,6 +7,7 @@ from django.utils import timezone
 
 from .forms import AlbumForm, DeliveryPhotoForm, DeliverySettingsForm, PhotoForm
 from .models import Album, DeliveryPhoto, Photo
+from users.models import GalleryAccess
 
 
 def gallery(request):
@@ -25,6 +27,26 @@ def album_detail(request, pk):
         pk=pk,
     )
     return render(request, 'portfolio/album_detail.html', {'album': album})
+
+
+@login_required
+def private_album_detail(request, pk):
+    if request.user.role != 'client':
+        raise Http404
+    access = get_object_or_404(
+        GalleryAccess.objects.filter(
+            client=request.user,
+            album_id=pk,
+            is_published=True,
+        ).filter(
+            Q(expires_at__isnull=True) | Q(expires_at__gte=timezone.now()),
+        ).select_related('album__photographer', 'album__photographer__profile', 'album__category'),
+    )
+    album = access.album
+    album._private_gallery_access = access
+    photos = Photo.objects.filter(album=album).order_by('-uploaded_at')
+    album._prefetched_objects_cache = {'photos': list(photos)}
+    return render(request, 'portfolio/private_album_detail.html', {'album': album, 'gallery_access': access})
 
 
 @login_required

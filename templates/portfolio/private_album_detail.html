@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ album.title }} · Private gallery | AuraCity{% endblock %}
+{% block content %}
+<div class="detail-back"><a href="{% url 'client_dashboard' %}#galleries" class="text-link">← Back to your dashboard</a></div>
+<section class="album-page-head">
+    <p class="eyebrow">Private gallery{% if album.category %} · {{ album.category.name }}{% endif %}</p>
+    <h1>{{ album.title }}</h1>
+    <p>Shared with you by {{ album.photographer.profile.display_name }}{% if gallery_access.expires_at %} · Available until {{ gallery_access.expires_at|date:"M j, Y" }}{% endif %}</p>
+</section>
+<div class="photo-grid photo-grid-large private-photo-grid">
+    {% for photo in album.photos.all %}
+    <figure class="photo-item">
+        <div class="watermarked-preview">
+            <img src="{{ photo.display_image.url }}" alt="{{ photo.caption|default:album.title }}" loading="lazy">
+            {% if gallery_access.watermark_enabled %}<span class="brand-overlay"><b>A</b> AuraCity</span>{% endif %}
+        </div>
+        {% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}
+    </figure>
+    {% empty %}
+    <div class="photo-empty">This gallery is ready for its first photograph.</div>
+    {% endfor %}
+</div>
+{% endblock %}

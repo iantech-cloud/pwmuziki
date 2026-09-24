@@ -5,11 +5,11 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db import DatabaseError, transaction
-from django.db.models import Avg, Prefetch
+from django.db.models import Avg, Prefetch, Q
 from django.utils import timezone
 from reviews.models import Review
 from .forms import ClientNoteForm, MessageForm, ProfileForm, RegistrationForm
-from .models import ClientNote, Contract, GalleryAccess, MessageThread, Notification, Profile, StudioSettings, User
+from .models import ClientNote, Contract, GalleryAccess, Message, MessageThread, Notification, Profile, StudioSettings, User
 from portfolio.models import Album, Photo
 from bookings.models import ServiceType
 
@@ -38,27 +38,85 @@ def _dashboard_context(request):
         request.user.client_bookings.all()
         if request.user.role == User.Role.CLIENT
         else request.user.photographer_bookings.all()
-    ).exclude(status='cancelled').select_related('client', 'photographer')
+    ).exclude(status='cancelled').select_related(
+        'client__profile',
+        'photographer__profile',
+        'service_type',
+    )
+    search_query = request.GET.get('q', '').strip()[:80]
+    if search_query:
+        contact_fields = (
+            Q(client__username__icontains=search_query)
+            | Q(client__first_name__icontains=search_query)
+            | Q(client__last_name__icontains=search_query)
+            if request.user.role == User.Role.PHOTOGRAPHER
+            else Q(photographer__username__icontains=search_query)
+            | Q(photographer__first_name__icontains=search_query)
+            | Q(photographer__last_name__icontains=search_query)
+        )
+        bookings = bookings.filter(
+            Q(event_type__icontains=search_query)
+            | Q(location__icontains=search_query)
+            | contact_fields
+        ).distinct()
     profile = Profile.ensure_for(request.user)
+    incoming_messages = Message.objects.filter(is_read=False).exclude(sender=request.user)
+    notifications = list(Notification.objects.filter(recipient=request.user)[:6])
+    for notification in notifications:
+        link = (notification.link or '').strip()
+        notification.dashboard_link = link if link.startswith('/') and not link.startswith('//') else '#'
+    message_scope = (
+        Q(thread__photographer=request.user)
+        if request.user.role == User.Role.PHOTOGRAPHER
+        else Q(thread__client=request.user)
+    )
     context = {
         'bookings': bookings[:8],
         'profile': profile,
-        'notifications': Notification.objects.filter(recipient=request.user)[:6],
+        'notifications': notifications,
         'unread_notifications': Notification.objects.filter(recipient=request.user, is_read=False).count(),
+        'unread_messages': incoming_messages.filter(message_scope).count(),
+        'search_query': search_query,
     }
     today = timezone.localdate()
     context['upcoming_count'] = bookings.filter(event_date__gte=today).exclude(status='cancelled').count()
     if request.user.role == User.Role.PHOTOGRAPHER:
+        portfolio_albums = Album.objects.filter(
+            photographer=request.user,
+        ).prefetch_related(
+            Prefetch('photos', queryset=Photo.objects.order_by('-uploaded_at')),
+        ).order_by('-created_at')
         context.update({
-            'portfolio_albums': Album.objects.filter(photographer=request.user).prefetch_related('photos').order_by('-created_at'),
+            'portfolio_albums': portfolio_albums,
             'pending_count': bookings.filter(status='pending').count(),
-            'gallery_count': GalleryAccess.objects.filter(album__photographer=request.user).count(),
+            'published_count': portfolio_albums.filter(is_public=True).count(),
+            'gallery_count': GalleryAccess.objects.filter(
+                album__photographer=request.user,
+                is_published=True,
+            ).count(),
         })
     else:
+        visible_galleries = GalleryAccess.objects.filter(
+            client=request.user,
+            is_published=True,
+        ).filter(
+            Q(expires_at__isnull=True) | Q(expires_at__gte=timezone.now()),
+        ).select_related(
+            'album',
+            'album__photographer__profile',
+        ).prefetch_related(
+            Prefetch('album__photos', queryset=Photo.objects.order_by('-uploaded_at')),
+        )
         context.update({
             'awaiting_count': bookings.filter(status='pending').count(),
             'balance_due': sum((booking.balance for booking in bookings.filter(status='balance_due')), 0),
-            'galleries': GalleryAccess.objects.filter(client=request.user).select_related('album', 'album__photographer__profile')[:5],
+            'galleries': visible_galleries[:5],
+            'contracts': Contract.objects.filter(
+                booking__client=request.user,
+            ).select_related('booking').order_by('-updated_at')[:4],
+            'threads': MessageThread.objects.filter(
+                client=request.user,
+            ).select_related('photographer__profile').order_by('-updated_at')[:4],
         })
     return context
 
