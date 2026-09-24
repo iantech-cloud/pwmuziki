@@ -6,11 +6,10 @@ from django.test import SimpleTestCase, TestCase, override_settings
 
 from bookings.models import Booking, BookingStatus, ReservationStatus
 from users.models import User
-from .models import Invoice, Payout, Transaction
+from .models import Invoice, Transaction
 from .services import initiate_stk_push, normalize_phone_number
 
 
-@override_settings(MPESA_CALLBACK_TOKEN='')
 class DarajaPhoneTests(SimpleTestCase):
     def test_normalizes_common_kenyan_formats(self):
         self.assertEqual(normalize_phone_number('0712 345 678'), '254712345678')
@@ -57,7 +56,6 @@ class DarajaPhoneTests(SimpleTestCase):
             )
 
 
-@override_settings(MPESA_CALLBACK_TOKEN='', MPESA_ENVIRONMENT='sandbox')
 class DarajaCallbackTests(TestCase):
     def setUp(self):
         client = User.objects.create_user(username='client', email='client@example.com', password='pass')
@@ -162,15 +160,15 @@ class DarajaCallbackTests(TestCase):
         self.assertEqual(transaction.status, Transaction.Status.SUCCESS)
         self.assertEqual(Transaction.objects.filter(pk=transaction.pk).count(), 1)
 
-    @override_settings(MPESA_CALLBACK_TOKEN='callback-secret', MPESA_ENVIRONMENT='production')
-    def test_production_callback_requires_token(self):
+    @override_settings(MPESA_ENVIRONMENT='production')
+    def test_production_callback_does_not_require_optional_token(self):
         response = self.client.post(
             '/payments/mpesa/callback/',
             data=json.dumps({'Body': {'stkCallback': {}}}),
             content_type='application/json',
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
 
     @patch('payments.views.query_stk_push', return_value={'ResultCode': '1032', 'ResultDesc': 'Request canceled by user'})
     def test_payment_status_queries_pending_stk_and_marks_terminal_failure(self, query):
@@ -191,40 +189,3 @@ class DarajaCallbackTests(TestCase):
         self.assertEqual(transaction.status, Transaction.Status.FAILED)
         query.assert_called_once_with(checkout_request_id='ws_CO_QUERY')
 
-    def test_b2c_result_marks_matching_payout_paid(self):
-        transaction = Transaction.objects.create(
-            invoice=self.invoice,
-            payer=self.booking.client,
-            amount=Decimal('8000'),
-            purpose=Transaction.Purpose.BALANCE,
-            provider_reference='ws_CO_B2C_SOURCE',
-            status=Transaction.Status.SUCCESS,
-        )
-        payout = Payout.objects.create(
-            transaction=transaction,
-            photographer=self.booking.photographer,
-            amount=Decimal('8000'),
-            status=Payout.Status.PROCESSING,
-            provider_reference='conv-123',
-        )
-
-        response = self.client.post(
-            '/payments/mpesa/b2c/result/',
-            data=json.dumps({
-                'Result': {
-                    'ResultCode': 0,
-                    'ResultDesc': 'The service request is processed successfully.',
-                    'ConversationID': 'conv-123',
-                    'ResultParameters': {
-                        'ResultParameter': [
-                            {'Key': 'TransactionAmount', 'Value': 8000},
-                        ],
-                    },
-                },
-            }),
-            content_type='application/json',
-        )
-
-        self.assertEqual(response.status_code, 200)
-        payout.refresh_from_db()
-        self.assertEqual(payout.status, Payout.Status.PAID)

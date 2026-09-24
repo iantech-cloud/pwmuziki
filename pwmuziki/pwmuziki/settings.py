@@ -176,7 +176,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 if not DEBUG:
     STORAGES = {
         'staticfiles': {
-            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+            'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
         },
     }
 
@@ -197,7 +197,6 @@ MPESA_CALLBACK_URL = os.environ.get(
     'MPESA_CALLBACK_URL',
     f'{SITE_URL}/payments/mpesa/callback/' if SITE_URL.startswith('https://') else '',
 )
-MPESA_CALLBACK_TOKEN = os.environ.get('MPESA_CALLBACK_TOKEN', '')
 MPESA_AUTH_URL = os.environ.get(
     'MPESA_AUTH_URL',
     'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
@@ -218,23 +217,6 @@ MPESA_QUERY_URL = os.environ.get(
     'https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query'
     if MPESA_ENVIRONMENT == 'production'
     else 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query',
-)
-MPESA_B2C_URL = os.environ.get(
-    'MPESA_B2C_URL',
-    'https://api.safaricom.co.ke/mpesa/b2c/v3/paymentrequest'
-    if MPESA_ENVIRONMENT == 'production'
-    else 'https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest',
-)
-MPESA_B2C_COMMAND_ID = os.environ.get('MPESA_B2C_COMMAND_ID', 'BusinessPayment')
-MPESA_B2C_INITIATOR_NAME = os.environ.get('MPESA_B2C_INITIATOR_NAME', '')
-MPESA_B2C_SECURITY_CREDENTIAL = os.environ.get('MPESA_B2C_SECURITY_CREDENTIAL', '')
-MPESA_B2C_RESULT_URL = os.environ.get(
-    'MPESA_B2C_RESULT_URL',
-    f'{SITE_URL}/payments/mpesa/b2c/result/' if SITE_URL.startswith('https://') else '',
-)
-MPESA_B2C_TIMEOUT_URL = os.environ.get(
-    'MPESA_B2C_TIMEOUT_URL',
-    f'{SITE_URL}/payments/mpesa/b2c/timeout/' if SITE_URL.startswith('https://') else '',
 )
 
 
