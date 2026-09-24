@@ -10,6 +10,7 @@ from .models import Invoice, Payout, Transaction
 from .services import initiate_stk_push, normalize_phone_number
 
 
+@override_settings(MPESA_CALLBACK_TOKEN='')
 class DarajaPhoneTests(SimpleTestCase):
     def test_normalizes_common_kenyan_formats(self):
         self.assertEqual(normalize_phone_number('0712 345 678'), '254712345678')
@@ -56,6 +57,7 @@ class DarajaPhoneTests(SimpleTestCase):
             )
 
 
+@override_settings(MPESA_CALLBACK_TOKEN='', MPESA_ENVIRONMENT='sandbox')
 class DarajaCallbackTests(TestCase):
     def setUp(self):
         client = User.objects.create_user(username='client', email='client@example.com', password='pass')

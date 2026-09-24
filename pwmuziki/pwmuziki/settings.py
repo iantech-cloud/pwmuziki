@@ -37,6 +37,10 @@ for host_variable in ('REPLIT_DEV_DOMAIN', 'VERCEL_URL'):
     host = os.environ.get(host_variable)
     if host:
         ALLOWED_HOSTS.append(host.split('://', 1)[-1].split('/', 1)[0])
+for host in os.environ.get('REPLIT_DOMAINS', '').split(','):
+    host = host.strip()
+    if host:
+        ALLOWED_HOSTS.append(host.split('://', 1)[-1].split('/', 1)[0])
 
 CSRF_TRUSTED_ORIGINS = ['https://pwmuziki.vercel.app']
 for origin_variable in ('VERCEL_URL', 'REPLIT_DEV_DOMAIN'):
@@ -66,6 +70,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -168,6 +173,12 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+if not DEBUG:
+    STORAGES = {
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        },
+    }
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

@@ -34,3 +34,13 @@ waitForPort = 5000
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[userenv]
+
+[userenv.shared]
+MPESA_ENVIRONMENT = "production"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "pwmuziki.pwmuziki.wsgi:application"]
+build = ["python", "manage.py", "collectstatic", "--noinput"]
