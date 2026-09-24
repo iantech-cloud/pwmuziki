@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AuraCity connects you with thoughtful photographers and packages for the moments that matter.">
+    <meta name="description" content="AuraCity helps clients find photographers, request bookings, pay securely, and receive private galleries.">
     <meta property="og:site_name" content="AuraCity">
-    <meta property="og:title" content="{% block og_title %}AuraCity — photography made personal{% endblock %}">
-    <meta property="og:description" content="Choose a photography package, find your visual match, and book with confidence.">
+    <meta property="og:title" content="{% block og_title %}AuraCity — Book a photographer{% endblock %}">
+    <meta property="og:description" content="Browse photography services and photographers, then manage your booking online.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#f5efe7">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,7 +15,7 @@
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
     <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{% static 'favicon.svg' %}">
-    <title>{% block title %}AuraCity — photography made personal{% endblock %}</title>
+    <title>{% block title %}AuraCity — Book a photographer{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'style.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -65,10 +65,10 @@
         <div class="shell footer-content">
             <div class="footer-brand">
                 <a href="{% url 'home' %}" class="logo" aria-label="AuraCity home"><img src="{% static 'logo.svg' %}" alt="AuraCity" width="156" height="38"></a>
-                <p>Photography for the moments<br>you want to keep close.</p>
+                <p>Find photographers.<br>Manage bookings.</p>
             </div>
             <div class="footer-note">
-                <span>Made for real stories</span>
+                <span>Photography booking platform</span>
                 <span>© 2026 AuraCity</span>
             </div>
         </div>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}{{ album.title }} | Pwmuziki{% endblock %}
+{% block title %}{{ album.title }} | AuraCity{% endblock %}
 {% block content %}
 <div class="detail-back"><a href="{% url 'photographer_detail' album.photographer.pk %}" class="text-link">← Back to {{ album.photographer.profile.display_name }}</a></div>
 <section class="album-page-head">
@@ -8,6 +8,6 @@
     {% if album.description %}<p>{{ album.description }}</p>{% endif %}
 </section>
 <div class="photo-grid photo-grid-large">
-    {% for photo in album.photos.all %}<figure class="photo-item"><div class="watermarked-preview"><img src="{{ photo.display_image.url }}" alt="{{ photo.caption|default:album.title }}" loading="lazy">{% if photo.is_featured %}<span class="brand-overlay"><b>P</b> pwmuziki</span>{% endif %}</div>{% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}</figure>{% empty %}<div class="photo-empty">This album is ready for its first photograph.</div>{% endfor %}
+    {% for photo in album.photos.all %}<figure class="photo-item"><div class="watermarked-preview"><img src="{{ photo.display_image.url }}" alt="{{ photo.caption|default:album.title }}" loading="lazy">{% if photo.is_featured %}<span class="brand-overlay"><b>A</b> AuraCity</span>{% endif %}</div>{% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}</figure>{% empty %}<div class="photo-empty">This album is ready for its first photograph.</div>{% endfor %}
 </div>
 {% endblock %}

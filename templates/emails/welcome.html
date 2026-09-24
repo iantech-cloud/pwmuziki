@@ -1,7 +1,7 @@
 {% extends "emails/base_email.html" %}
 {% block email_content %}
 <h1>Welcome to AuraCity{% if user.first_name %}, {{ user.first_name }}{% endif %}.</h1>
-<p>Photography is personal. AuraCity makes it easier to find someone whose way of seeing feels like you.</p>
-<p>Explore photographers, save the work that moves you, and book your next story with confidence.</p>
-<p><a class="button" href="{{ site_url }}">Explore AuraCity</a></p>
+<p>Your AuraCity account is ready.</p>
+<p>Browse photographers, request a booking, and manage payments and galleries from your dashboard.</p>
+<p><a class="button" href="{{ site_url }}">Open AuraCity</a></p>
 {% endblock %}

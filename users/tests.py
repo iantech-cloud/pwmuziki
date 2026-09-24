@@ -31,7 +31,7 @@ class RegistrationFlowTests(TestCase):
         response = self.client.post('/register/', self.registration_data('no-role'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Choose how you’ll use Pwmuziki')
+        self.assertContains(response, 'Choose how you’ll use AuraCity')
         self.assertFalse(User.objects.filter(username='no-role').exists())
 
     def test_client_registration_logs_into_client_dashboard(self):

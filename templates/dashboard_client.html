@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}Your workspace | Pwmuziki{% endblock %}
+{% block title %}Client dashboard | AuraCity{% endblock %}
 {% block content %}
 <div class="workspace-app client-dashboard">
     <aside class="workspace-sidebar">
-        <a href="{% url 'home' %}" class="workspace-brand"><span class="brand-mark">P</span><span>Pwmuziki<small>MY WORKSPACE</small></span></a>
+        <a href="{% url 'home' %}" class="workspace-brand"><span class="brand-mark">A</span><span>AuraCity<small>MY WORKSPACE</small></span></a>
         <div class="workspace-user"><div class="workspace-avatar">{% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="{{ profile.display_name }}">{% else %}{{ profile.display_name|slice:":1"|upper }}{% endif %}</div><div><strong>{{ profile.display_name }}</strong><small>Client</small></div></div>
-        <p class="workspace-nav-label">Your space</p>
+        <p class="workspace-nav-label">Client dashboard</p>
         <nav class="workspace-sidebar-nav" aria-label="Client navigation">
             <a class="active" href="{% url 'client_dashboard' %}"><span class="nav-icon">⌂</span>Overview</a>
             <a href="{% url 'home' %}#photographers"><span class="nav-icon">⌕</span>Discover photographers</a>
@@ -18,32 +18,32 @@
             <a href="{% url 'profile_edit' %}"><span class="nav-icon">◎</span>Profile & settings</a>
             <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit"><span class="nav-icon">↪</span>Log out</button></form>
         </nav>
-        <div class="workspace-sidebar-foot"><span class="workspace-status-dot"></span><span>Your space is private</span></div>
+        <div class="workspace-sidebar-foot"><span class="workspace-status-dot"></span><span>Private account</span></div>
     </aside>
     <div class="workspace-content">
         <header class="workspace-topbar">
-            <div><p class="workspace-overline">Wednesday, {% now "F j, Y" %}</p><h1>Welcome back, {{ profile.display_name }}.</h1><p>Everything for your next story, in one place.</p></div>
-            <div class="workspace-top-actions"><label class="workspace-search"><span>⌕</span><input type="search" placeholder="Search photographers"></label><a class="workspace-icon-button" href="{% url 'booking_list' %}#messages" aria-label="View messages">□</a><a class="workspace-button workspace-button--accent" href="{% url 'home' %}#photographers">Discover work <span>↗</span></a></div>
+            <div><p class="workspace-overline">{% now "l, F j, Y" %}</p><h1>Welcome back, {{ profile.display_name }}.</h1><p>Manage your photographers, bookings, payments, and galleries.</p></div>
+            <div class="workspace-top-actions"><label class="workspace-search"><span>⌕</span><input type="search" placeholder="Search photographers"></label><a class="workspace-icon-button" href="{% url 'booking_list' %}#messages" aria-label="View messages">□</a><a class="workspace-button workspace-button--accent" href="{% url 'home' %}#photographers">Find photographer <span>↗</span></a></div>
         </header>
         <section class="workspace-hero workspace-hero--client">
-            <div><span class="workspace-overline workspace-overline--light">Your photography plans</span><h2>Keep every<br><em>moment close.</em></h2><p>Find an inspiring photographer, follow your bookings, and keep every detail of your next story close.</p></div>
-            <div class="workspace-hero-side"><span class="hero-counter">01 <small>/ 03</small></span><a class="workspace-button workspace-button--light" href="{% url 'booking_create' %}">Start a booking <span>→</span></a></div>
+            <div><span class="workspace-overline workspace-overline--light">Client account</span><h2>Manage your<br><em>bookings.</em></h2><p>Send requests, follow booking status, make payments, and access galleries.</p></div>
+            <div class="workspace-hero-side"><span class="hero-counter">01 <small>/ 03</small></span><a class="workspace-button workspace-button--light" href="{% url 'booking_create' %}">Request booking <span>→</span></a></div>
         </section>
         <section class="workspace-stats workspace-stats--client" aria-label="Your summary">
-            <a href="{% url 'booking_list' %}" class="workspace-stat workspace-stat--accent"><span>Upcoming plans</span><strong>{{ upcoming_count }}</strong><small>Moments on your calendar <b>↗</b></small></a>
-            <a href="{% url 'booking_list' %}" class="workspace-stat"><span>Awaiting replies</span><strong>{{ awaiting_count }}</strong><small>Photographers to hear from <b>↗</b></small></a>
-            <a href="{% url 'booking_list' %}" class="workspace-stat"><span>Balance due</span><strong>KES {{ balance_due|floatformat:0 }}</strong><small>Keep your plans moving <b>↗</b></small></a>
+            <a href="{% url 'booking_list' %}" class="workspace-stat workspace-stat--accent"><span>Upcoming bookings</span><strong>{{ upcoming_count }}</strong><small>Scheduled dates <b>↗</b></small></a>
+            <a href="{% url 'booking_list' %}" class="workspace-stat"><span>Pending requests</span><strong>{{ awaiting_count }}</strong><small>Awaiting photographer reply <b>↗</b></small></a>
+            <a href="{% url 'booking_list' %}" class="workspace-stat"><span>Balance due</span><strong>KES {{ balance_due|floatformat:0 }}</strong><small>Payments to complete <b>↗</b></small></a>
         </section>
         <section class="workspace-section">
-            <div class="workspace-section-heading"><div><p class="workspace-overline">Your plans</p><h2>Recent bookings</h2></div><a class="workspace-link" href="{% url 'booking_list' %}">View all bookings <span>→</span></a></div>
-            <div class="workspace-panel workspace-bookings">{% for booking in bookings|slice:":5" %}<a class="workspace-schedule-row" href="{% url 'booking_detail' booking.pk %}"><time>{{ booking.event_date|date:"M j" }}</time><span class="schedule-rule"></span><span><strong>{{ booking.event_type }}</strong><small>with {{ booking.photographer.profile.display_name }} · {{ booking.location }}</small></span><span class="status status-{{ booking.status }}">{{ booking.get_status_display }}</span><b>↗</b></a>{% empty %}<div class="workspace-empty workspace-empty--wide"><span>＋</span><div><strong>Your next story starts here.</strong><small>Discover a photographer whose work feels like you.</small></div><a class="workspace-button workspace-button--accent" href="{% url 'home' %}#photographers">Browse photographers</a></div>{% endfor %}</div>
+            <div class="workspace-section-heading"><div><p class="workspace-overline">Bookings</p><h2>Recent bookings</h2></div><a class="workspace-link" href="{% url 'booking_list' %}">View all bookings <span>→</span></a></div>
+            <div class="workspace-panel workspace-bookings">{% for booking in bookings|slice:":5" %}<a class="workspace-schedule-row" href="{% url 'booking_detail' booking.pk %}"><time>{{ booking.event_date|date:"M j" }}</time><span class="schedule-rule"></span><span><strong>{{ booking.event_type }}</strong><small>with {{ booking.photographer.profile.display_name }} · {{ booking.location }}</small></span><span class="status status-{{ booking.status }}">{{ booking.get_status_display }}</span><b>↗</b></a>{% empty %}<div class="workspace-empty workspace-empty--wide"><span>＋</span><div><strong>No bookings yet.</strong><small>Browse photographers to send your first request.</small></div><a class="workspace-button workspace-button--accent" href="{% url 'home' %}#photographers">Find a photographer</a></div>{% endfor %}</div>
         </section>
         <section id="galleries" class="workspace-section workspace-section--tight">
-            <div class="workspace-section-heading"><div><p class="workspace-overline">Private memories</p><h2>Your galleries</h2></div><span class="workspace-section-note">{{ galleries|length }} private {% if galleries|length == 1 %}gallery{% else %}galleries{% endif %}</span></div>
-            <div class="workspace-project-grid">{% for gallery in galleries|slice:":4" %}<a class="workspace-project" href="{% url 'album_detail' gallery.album.pk %}"><div class="workspace-project-image">{% with cover=gallery.album.photos.all.0 %}{% if cover %}<img src="{{ cover.image.url }}" alt="{{ gallery.album.title }}">{% else %}<span>P</span>{% endif %}{% endwith %}<small>Private gallery</small></div><strong>{{ gallery.album.title }}</strong><span>with {{ gallery.album.photographer.profile.display_name }}</span></a>{% empty %}<div class="workspace-empty workspace-empty--wide"><span>▧</span><div><strong>Your galleries will appear here.</strong><small>When a photographer shares a gallery, you’ll find it in your private space.</small></div><a class="workspace-button workspace-button--outline" href="{% url 'home' %}#photographers">Explore photographers</a></div>{% endfor %}</div>
+            <div class="workspace-section-heading"><div><p class="workspace-overline">Delivered work</p><h2>Your galleries</h2></div><span class="workspace-section-note">{{ galleries|length }} private {% if galleries|length == 1 %}gallery{% else %}galleries{% endif %}</span></div>
+            <div class="workspace-project-grid">{% for gallery in galleries|slice:":4" %}<a class="workspace-project" href="{% url 'album_detail' gallery.album.pk %}"><div class="workspace-project-image">{% with cover=gallery.album.photos.all.0 %}{% if cover %}<img src="{{ cover.image.url }}" alt="{{ gallery.album.title }}">{% else %}<span>A</span>{% endif %}{% endwith %}<small>Private gallery</small></div><strong>{{ gallery.album.title }}</strong><span>with {{ gallery.album.photographer.profile.display_name }}</span></a>{% empty %}<div class="workspace-empty workspace-empty--wide"><span>▧</span><div><strong>No galleries yet.</strong><small>Your photographer will share the gallery here after delivery.</small></div><a class="workspace-button workspace-button--outline" href="{% url 'home' %}#photographers">Find a photographer</a></div>{% endfor %}</div>
         </section>
         <section class="workspace-bottom-grid workspace-bottom-grid--client">
-            <article class="workspace-panel workspace-note-card"><span class="panel-kicker">A little preparation</span><h3>Have a story in mind?</h3><p>Tell a photographer what you’re imagining and make your first request when you’re ready.</p><a class="workspace-button workspace-button--accent" href="{% url 'booking_create' %}">Request a booking <span>→</span></a></article>
+            <article class="workspace-panel workspace-note-card"><span class="panel-kicker">Next step</span><h3>Need a photographer?</h3><p>Choose a service, select a photographer, and send a booking request.</p><a class="workspace-button workspace-button--accent" href="{% url 'booking_create' %}">Request a booking <span>→</span></a></article>
             <article class="workspace-panel workspace-profile-card"><div class="workspace-avatar workspace-avatar--large">{% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="{{ profile.display_name }}">{% else %}{{ profile.display_name|slice:":1"|upper }}{% endif %}</div><div><span class="panel-kicker">Your account</span><h3>{{ profile.display_name }}</h3><p>{{ profile.bio|default:"Add a short introduction to help photographers get to know you."|truncatewords:20 }}</p><a class="workspace-link" href="{% url 'profile_edit' %}">Edit profile <span>↗</span></a></div></article>
         </section>
     </div>

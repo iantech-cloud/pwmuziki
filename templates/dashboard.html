@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
-{% block title %}{% if request.user.role == 'photographer' %}Your studio{% else %}Your bookings{% endif %} | Pwmuziki{% endblock %}
+{% block title %}{% if request.user.role == 'photographer' %}Photographer dashboard{% else %}Client dashboard{% endif %} | AuraCity{% endblock %}
 
 {% block content %}
 <section class="dashboard-intro">
     <div>
         <div class="dashboard-kicker"><span class="live-dot" aria-hidden="true"></span><span>{% if request.user.role == 'photographer' %}Studio overview{% else %}Personal workspace{% endif %}</span><span class="kicker-rule" aria-hidden="true"></span><span>{{ now|date:"l, F j" }}</span></div>
-        <p class="eyebrow">{% if request.user.role == 'photographer' %}Your studio{% else %}Your Pwmuziki{% endif %}</p>
+        <p class="eyebrow">{% if request.user.role == 'photographer' %}Photographer dashboard{% else %}Client dashboard{% endif %}</p>
         <h1>{% if request.user.role == 'photographer' %}Good to see you,<br><em>{{ profile.display_name }}.</em>{% else %}Make room for<br><em>what matters.</em>{% endif %}</h1>
-        <p class="dashboard-lede">{% if request.user.role == 'photographer' %}Keep your work visible, your calendar clear, and your next story close.{% else %}Find the right eye, make a plan, and keep every detail in one place.{% endif %}</p>
+        <p class="dashboard-lede">{% if request.user.role == 'photographer' %}Manage bookings, availability, portfolio, and client delivery.{% else %}Find a photographer and manage bookings, payments, and galleries.{% endif %}</p>
     </div>
     <div class="dashboard-intro-actions">
         {% if request.user.role == 'photographer' %}<a href="{% url 'portfolio_manage' %}" class="button button-primary">Manage your work <span aria-hidden="true">→</span></a><a href="{% url 'booking_list' %}" class="button button-secondary">View bookings</a>{% else %}<a href="{% url 'home' %}#photographers" class="button button-primary">Find a photographer <span aria-hidden="true">→</span></a><a href="{% url 'booking_create' %}" class="button button-secondary">Start a booking</a>{% endif %}

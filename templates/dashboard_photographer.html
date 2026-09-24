@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}Studio overview | Pwmuziki{% endblock %}
+{% block title %}Photographer dashboard | AuraCity{% endblock %}
 {% block content %}
 <div class="workspace-app photographer-dashboard">
     <aside class="workspace-sidebar">
-        <a href="{% url 'home' %}" class="workspace-brand"><span class="brand-mark">P</span><span>Pwmuziki<small>STUDIO OS</small></span></a>
+        <a href="{% url 'home' %}" class="workspace-brand"><span class="brand-mark">A</span><span>AuraCity<small>STUDIO OS</small></span></a>
         <div class="workspace-user"><div class="workspace-avatar">{% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="{{ profile.display_name }}">{% else %}{{ profile.display_name|slice:":1"|upper }}{% endif %}</div><div><strong>{{ profile.display_name }}</strong><small>Photographer</small></div></div>
-        <p class="workspace-nav-label">Workspace</p>
+        <p class="workspace-nav-label">Photographer dashboard</p>
         <nav class="workspace-sidebar-nav" aria-label="Photographer navigation">
             <a class="active" href="{% url 'photographer_dashboard' %}"><span class="nav-icon">⌂</span>Overview</a>
             <a href="{% url 'booking_list' %}"><span class="nav-icon">◷</span>Bookings{% if pending_count %}<b>{{ pending_count }}</b>{% endif %}</a>
@@ -19,44 +19,44 @@
             <a href="{% url 'profile_edit' %}"><span class="nav-icon">◎</span>Profile & settings</a>
             <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit"><span class="nav-icon">↪</span>Log out</button></form>
         </nav>
-        <div class="workspace-sidebar-foot"><span class="workspace-status-dot"></span><span>Studio is visible</span></div>
+        <div class="workspace-sidebar-foot"><span class="workspace-status-dot"></span><span>Profile is public</span></div>
     </aside>
     <div class="workspace-content">
         <header class="workspace-topbar">
-            <div><p class="workspace-overline">Wednesday, {% now "F j, Y" %}</p><h1>Good morning, {{ profile.display_name }}.</h1><p>Here’s what’s moving through your studio.</p></div>
-            <div class="workspace-top-actions"><label class="workspace-search"><span>⌕</span><input type="search" placeholder="Search your studio"></label><a class="workspace-icon-button" href="{% url 'booking_list' %}" aria-label="View notifications">◌{% if unread_notifications %}<i>{{ unread_notifications }}</i>{% endif %}</a><a class="workspace-button workspace-button--accent" href="{% url 'album_create' %}">New project <span>＋</span></a></div>
+            <div><p class="workspace-overline">{% now "l, F j, Y" %}</p><h1>Welcome, {{ profile.display_name }}.</h1><p>Manage bookings, availability, portfolio, and client delivery.</p></div>
+            <div class="workspace-top-actions"><label class="workspace-search"><span>⌕</span><input type="search" placeholder="Search bookings"></label><a class="workspace-icon-button" href="{% url 'booking_list' %}" aria-label="View notifications">◌{% if unread_notifications %}<i>{{ unread_notifications }}</i>{% endif %}</a><a class="workspace-button workspace-button--accent" href="{% url 'album_create' %}">New album <span>＋</span></a></div>
         </header>
         <section class="workspace-hero">
-            <div><span class="workspace-overline workspace-overline--light">Your creative command center</span><h2>Make space for<br><em>the next story.</em></h2><p>Keep your clients, calendar, galleries, and work in progress in one calm place.</p></div>
+            <div><span class="workspace-overline workspace-overline--light">Photographer tools</span><h2>Manage your<br><em>business.</em></h2><p>Respond to clients, manage your schedule, publish work, and deliver galleries.</p></div>
             <div class="workspace-hero-side"><span class="hero-counter">01 <small>/ 04</small></span><a class="workspace-button workspace-button--light" href="{% url 'photographer_detail' request.user.pk %}">View public profile <span>↗</span></a></div>
         </section>
         <section class="workspace-stats" aria-label="Studio summary">
-            <a href="{% url 'booking_list' %}" class="workspace-stat workspace-stat--accent"><span>Upcoming shoots</span><strong>{{ upcoming_count }}</strong><small>On your calendar <b>↗</b></small></a>
-            <a href="{% url 'booking_list' %}" class="workspace-stat"><span>Requests to answer</span><strong>{{ pending_count }}</strong><small>Waiting for your reply <b>↗</b></small></a>
+            <a href="{% url 'booking_list' %}" class="workspace-stat workspace-stat--accent"><span>Upcoming bookings</span><strong>{{ upcoming_count }}</strong><small>Scheduled dates <b>↗</b></small></a>
+            <a href="{% url 'booking_list' %}" class="workspace-stat"><span>Pending requests</span><strong>{{ pending_count }}</strong><small>Requests to answer <b>↗</b></small></a>
             <a href="{% url 'portfolio_manage' %}" class="workspace-stat"><span>Published galleries</span><strong>{{ gallery_count }}</strong><small>Visible to clients <b>↗</b></small></a>
-            <a href="{% url 'booking_list' %}#messages" class="workspace-stat"><span>Unread messages</span><strong>{{ unread_notifications }}</strong><small>Keep the conversation going <b>↗</b></small></a>
+            <a href="{% url 'booking_list' %}#messages" class="workspace-stat"><span>Unread messages</span><strong>{{ unread_notifications }}</strong><small>Client updates <b>↗</b></small></a>
         </section>
         <section class="workspace-section">
-            <div class="workspace-section-heading"><div><p class="workspace-overline">Mission control</p><h2>Today at a glance</h2></div><a class="workspace-link" href="{% url 'booking_list' %}">Open calendar <span>→</span></a></div>
+            <div class="workspace-section-heading"><div><p class="workspace-overline">Schedule</p><h2>Upcoming bookings</h2></div><a class="workspace-link" href="{% url 'booking_list' %}">View bookings <span>→</span></a></div>
             <div class="workspace-two-column">
                 <article class="workspace-panel workspace-schedule"><div class="workspace-panel-heading"><div><span class="panel-kicker">Upcoming schedule</span><h3>Your next sessions</h3></div><span class="panel-count">{{ upcoming_count }} upcoming</span></div>
-                    {% for booking in bookings|slice:":4" %}<a class="workspace-schedule-row" href="{% url 'booking_detail' booking.pk %}"><time>{{ booking.event_date|date:"M j" }}</time><span class="schedule-rule"></span><span><strong>{{ booking.event_type }}</strong><small>with {{ booking.client.profile.display_name }} · {{ booking.location }}</small></span><b>↗</b></a>{% empty %}<div class="workspace-empty"><span>＋</span><div><strong>Your calendar is clear.</strong><small>Add a booking when the next story arrives.</small></div></div>{% endfor %}
+                    {% for booking in bookings|slice:":4" %}<a class="workspace-schedule-row" href="{% url 'booking_detail' booking.pk %}"><time>{{ booking.event_date|date:"M j" }}</time><span class="schedule-rule"></span><span><strong>{{ booking.event_type }}</strong><small>with {{ booking.client.profile.display_name }} · {{ booking.location }}</small></span><b>↗</b></a>{% empty %}<div class="workspace-empty"><span>＋</span><div><strong>No upcoming bookings.</strong><small>New client requests will appear here.</small></div></div>{% endfor %}
                     <a href="{% url 'booking_list' %}" class="workspace-panel-footer">See all bookings <span>→</span></a>
                 </article>
-                <article class="workspace-panel workspace-actions-panel"><div class="workspace-panel-heading"><div><span class="panel-kicker">Studio shortcuts</span><h3>Move things forward</h3></div></div>
-                    <a class="workspace-action-row" href="{% url 'availability_manage' %}"><span class="action-number">01</span><div><strong>Set availability</strong><small>Keep your calendar clear</small></div><b>↗</b></a>
-                    <a class="workspace-action-row" href="{% url 'client_note_create' %}"><span class="action-number">02</span><div><strong>Add a client note</strong><small>Remember what matters</small></div><b>↗</b></a>
-                    <a class="workspace-action-row" href="{% url 'profile_edit' %}"><span class="action-number">03</span><div><strong>Update your profile</strong><small>Show your point of view</small></div><b>↗</b></a>
+                <article class="workspace-panel workspace-actions-panel"><div class="workspace-panel-heading"><div><span class="panel-kicker">Shortcuts</span><h3>Manage your account</h3></div></div>
+                    <a class="workspace-action-row" href="{% url 'availability_manage' %}"><span class="action-number">01</span><div><strong>Set availability</strong><small>Choose dates clients can book</small></div><b>↗</b></a>
+                    <a class="workspace-action-row" href="{% url 'client_note_create' %}"><span class="action-number">02</span><div><strong>Add client note</strong><small>Save booking information</small></div><b>↗</b></a>
+                    <a class="workspace-action-row" href="{% url 'profile_edit' %}"><span class="action-number">03</span><div><strong>Update profile</strong><small>Keep your public details current</small></div><b>↗</b></a>
                 </article>
             </div>
         </section>
         <section class="workspace-section workspace-section--tight">
-            <div class="workspace-section-heading"><div><p class="workspace-overline">Visual archive</p><h2>Recent projects</h2></div><a class="workspace-link" href="{% url 'portfolio_manage' %}">Manage portfolio <span>→</span></a></div>
-            <div class="workspace-project-grid">{% for album in portfolio_albums|slice:":4" %}<a class="workspace-project" href="{% url 'portfolio_manage' %}"><div class="workspace-project-image">{% with cover=album.photos.all.0 %}{% if cover %}<img src="{{ cover.image.url }}" alt="{{ album.title }}">{% else %}<span>P</span>{% endif %}{% endwith %}<small>{% if album.is_public %}Published{% else %}In progress{% endif %}</small></div><strong>{{ album.title }}</strong><span>{% if album.is_public %}Public gallery{% else %}Private project{% endif %}</span></a>{% empty %}<div class="workspace-empty workspace-empty--wide"><span>＋</span><div><strong>Your next story starts here.</strong><small>Create an album to give your work a home.</small></div><a class="workspace-button workspace-button--outline" href="{% url 'album_create' %}">Create album</a></div>{% endfor %}</div>
+            <div class="workspace-section-heading"><div><p class="workspace-overline">Portfolio</p><h2>Recent projects</h2></div><a class="workspace-link" href="{% url 'portfolio_manage' %}">Manage portfolio <span>→</span></a></div>
+             <div class="workspace-project-grid">{% for album in portfolio_albums|slice:":4" %}<a class="workspace-project" href="{% url 'portfolio_manage' %}"><div class="workspace-project-image">{% with cover=album.photos.all.0 %}{% if cover %}<img src="{{ cover.image.url }}" alt="{{ album.title }}">{% else %}<span>A</span>{% endif %}{% endwith %}<small>{% if album.is_public %}Published{% else %}In progress{% endif %}</small></div><strong>{{ album.title }}</strong><span>{% if album.is_public %}Public gallery{% else %}Private project{% endif %}</span></a>{% empty %}<div class="workspace-empty workspace-empty--wide"><span>＋</span><div><strong>No portfolio albums yet.</strong><small>Create an album to publish your work.</small></div><a class="workspace-button workspace-button--outline" href="{% url 'album_create' %}">Create album</a></div>{% endfor %}</div>
         </section>
         <section class="workspace-bottom-grid">
             <article class="workspace-panel workspace-profile-card"><div class="workspace-avatar workspace-avatar--large">{% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="{{ profile.display_name }}">{% else %}{{ profile.display_name|slice:":1"|upper }}{% endif %}</div><div><span class="panel-kicker">Public profile</span><h3>{{ profile.display_name }}</h3><p>{{ profile.bio|default:"Add a short introduction so the right people know who they’re working with."|truncatewords:22 }}</p><a class="workspace-link" href="{% url 'profile_edit' %}">Edit profile <span>↗</span></a></div></article>
-            <article class="workspace-panel workspace-insight-card"><div class="workspace-panel-heading"><div><span class="panel-kicker">Studio pulse</span><h3>People are looking.</h3></div><strong class="insight-change">+18%</strong></div><p>Profile visits this month</p><div class="insight-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="insight-foot"><span>30 days ago</span><b>Today ↗</b></div></article>
+            <article class="workspace-panel workspace-insight-card"><div class="workspace-panel-heading"><div><span class="panel-kicker">Profile activity</span><h3>Profile visits.</h3></div><strong class="insight-change">+18%</strong></div><p>Profile visits this month</p><div class="insight-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="insight-foot"><span>30 days ago</span><b>Today ↗</b></div></article>
         </section>
     </div>
 </div>

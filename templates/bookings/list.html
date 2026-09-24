@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}Bookings | Pwmuziki{% endblock %}
+{% block title %}Bookings | AuraCity{% endblock %}
 {% block content %}
 <section class="page-heading">
-    <div><p class="eyebrow">Your calendar</p><h1>Bookings</h1><p class="page-lede">The moments you’re making room for.</p></div>
+    <div><p class="eyebrow">Booking management</p><h1>Bookings</h1><p class="page-lede">Review dates, status, clients, and payment details.</p></div>
     {% if request.user.role == 'client' %}<a class="button button-primary" href="{% url 'booking_create' %}">Request a booking <span aria-hidden="true">↗</span></a>{% endif %}
 </section>
 <div class="booking-list booking-list-page">
@@ -15,7 +15,7 @@
         <span class="row-arrow" aria-hidden="true">→</span>
     </a>
     {% empty %}
-    <div class="empty-state"><span class="empty-stamp">P</span><h2>No bookings yet.</h2><p>When you find the right fit, your plans will live here.</p>{% if request.user.role == 'client' %}<a href="{% url 'home' %}" class="button button-primary">Find a photographer <span aria-hidden="true">↘</span></a>{% endif %}</div>
+    <div class="empty-state"><span class="empty-stamp">A</span><h2>No bookings yet.</h2><p>Your bookings will appear here after you send or receive a request.</p>{% if request.user.role == 'client' %}<a href="{% url 'home' %}" class="button button-primary">Find a photographer <span aria-hidden="true">↘</span></a>{% endif %}</div>
     {% endfor %}
 </div>
 {% endblock %}

@@ -13,10 +13,17 @@ class BookingForm(forms.ModelForm):
             'event_date': forms.DateInput(attrs={'type': 'date'}),
             'details': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Share the mood, timing, and anything else that matters...'}),
         }
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, photographer_id=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
         self.fields['photographer'].queryset = User.objects.filter(role=User.Role.PHOTOGRAPHER, is_active=True)
+        if photographer_id and not self.instance.pk:
+            try:
+                photographer = self.fields['photographer'].queryset.get(pk=photographer_id)
+            except (User.DoesNotExist, TypeError, ValueError):
+                photographer = None
+            if photographer:
+                self.initial['photographer'] = photographer
         self.fields['service_type'].queryset = ServiceType.objects.filter(is_active=True)
         self.fields['service_type'].empty_label = 'Choose a service'
         self.fields['service_type'].label = 'What are you booking?'

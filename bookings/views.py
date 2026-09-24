@@ -18,7 +18,7 @@ def booking_list(request):
 def booking_create(request):
     if request.user.role != 'client':
         return redirect('booking_list')
-    form = BookingForm(request.POST or None, user=request.user)
+    form = BookingForm(request.POST or None, user=request.user, photographer_id=request.GET.get('photographer'))
     if request.method == 'POST' and form.is_valid():
         service_type = form.cleaned_data['service_type']
         quote = (

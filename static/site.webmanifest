@@ -1,7 +1,7 @@
 {
-  "name": "AuraCity — photography made personal",
+  "name": "AuraCity — Book a photographer",
   "short_name": "AuraCity",
-  "description": "Choose photography packages and photographers for the moments that matter.",
+  "description": "Browse photography services, book photographers, and manage galleries.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

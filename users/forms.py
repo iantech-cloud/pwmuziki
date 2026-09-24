@@ -21,7 +21,7 @@ class RegistrationForm(UserCreationForm):
     role = forms.ChoiceField(
         required=True,
         choices=(
-            ('', 'Choose how you’ll use Pwmuziki'),
+            ('', 'Choose how you’ll use AuraCity'),
             (User.Role.CLIENT, 'I’m booking a photographer'),
             (User.Role.PHOTOGRAPHER, 'I’m sharing my photography'),
         ),

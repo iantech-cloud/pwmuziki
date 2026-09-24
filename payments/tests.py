@@ -44,7 +44,21 @@ class DarajaCallbackTests(TestCase):
     def callback(self, transaction):
         return self.client.post(
             '/payments/mpesa/callback/',
-            data=json.dumps({'Body': {'stkCallback': {'CheckoutRequestID': transaction.provider_reference, 'ResultCode': 0}}}),
+            data=json.dumps({
+                'Body': {
+                    'stkCallback': {
+                        'CheckoutRequestID': transaction.provider_reference,
+                        'ResultCode': 0,
+                        'ResultDesc': 'The service request is processed successfully.',
+                        'CallbackMetadata': {
+                            'Item': [
+                                {'Name': 'Amount', 'Value': float(transaction.amount)},
+                                {'Name': 'MpesaReceiptNumber', 'Value': 'QAB1234567'},
+                            ],
+                        },
+                    },
+                },
+            }),
             content_type='application/json',
         )
 

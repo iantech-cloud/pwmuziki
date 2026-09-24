@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Create account | Pwmuziki{% endblock %}
+{% block title %}Create account | AuraCity{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'users/auth.css' %}">
@@ -22,10 +22,10 @@
             </svg>
         </div>
 
-        <h1 class="auth-title">{% if selected_role == 'photographer' %}Share your<br><em>point of view.</em>{% elif selected_role == 'client' %}Find your<br><em>photographer.</em>{% else %}Create your<br><em>account.</em>{% endif %}</h1>
+        <h1 class="auth-title">{% if selected_role == 'photographer' %}Create a<br><em>photographer account.</em>{% elif selected_role == 'client' %}Create a<br><em>client account.</em>{% else %}Create your<br><em>account.</em>{% endif %}</h1>
 
         <p class="auth-subtitle">
-            {% if selected_role == 'photographer' %}Build a profile, share your work, and meet people looking for your eye.{% elif selected_role == 'client' %}Find the right photographer and keep every booking in one place.{% else %}Choose how you’ll use Pwmuziki so we can set up the right dashboard.{% endif %}
+            {% if selected_role == 'photographer' %}Publish your profile, portfolio, availability, and services.{% elif selected_role == 'client' %}Browse photographers, request bookings, and manage payments.{% else %}Choose whether you are booking photography or offering it.{% endif %}
         </p>
 
         <form method="post" class="auth-form">
@@ -52,7 +52,7 @@
 
         <p class="auth-footer-link">
             Already registered? <a href="{% url 'login' %}">Log in</a>
-            <span class="auth-switch">Or <a href="{% url 'register_client' %}">join as a client</a> · <a href="{% url 'register_photographer' %}">photographer</a></span>
+            <span class="auth-switch">Or <a href="{% url 'register_client' %}">create a client account</a> · <a href="{% url 'register_photographer' %}">photographer account</a></span>
         </p>
 
     </div>

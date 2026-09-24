@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}{{ booking.event_type }} | Pwmuziki{% endblock %}
+{% block title %}{{ booking.event_type }} | AuraCity{% endblock %}
 {% block content %}
 <div class="detail-back"><a href="{% url 'booking_list' %}" class="text-link">← Back to bookings</a></div>
 <section class="detail-layout">
     <div class="detail-main">
         <p class="eyebrow">{{ booking.service_type.name|default:booking.event_type }}</p>
         <h1>{{ booking.event_type }}</h1>
-        <p class="detail-lede">{{ booking.details|default:"A new story waiting to be made." }}</p>
+        <p class="detail-lede">{{ booking.details|default:"No additional booking details provided." }}</p>
         <div class="detail-facts">
             <div><span>Date</span><strong>{{ booking.event_date|date:"l, j F Y" }}</strong></div>
             <div><span>Place</span><strong>{{ booking.location }}</strong></div>
@@ -32,8 +32,8 @@
 </section>
 {% if request.user == booking.client %}
 <section class="delivery-client-section">
-    <div class="section-heading compact"><div><p class="eyebrow">Your photographs</p><h2>{% if booking.status == 'completed' and booking.google_drive_url %}Your private gallery is ready.{% elif booking.delivery_photos %}A preview of what’s coming.{% else %}Your gallery will appear here.{% endif %}</h2></div></div>
-    {% if booking.delivery_photos %}<div class="photo-grid">{% for photo in booking.delivery_photos.all %}<figure class="photo-item"><div class="watermarked-preview"><img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Watermarked preview' }}"><span class="brand-overlay"><b>P</b> pwmuziki</span></div>{% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}</figure>{% endfor %}</div>{% endif %}
+    <div class="section-heading compact"><div><p class="eyebrow">Client gallery</p><h2>{% if booking.status == 'completed' and booking.google_drive_url %}Your private gallery is ready.{% elif booking.delivery_photos %}Preview photos{% else %}Gallery pending{% endif %}</h2></div></div>
+    {% if booking.delivery_photos %}<div class="photo-grid">{% for photo in booking.delivery_photos.all %}<figure class="photo-item"><div class="watermarked-preview"><img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Watermarked preview' }}"><span class="brand-overlay"><b>A</b> AuraCity</span></div>{% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}</figure>{% endfor %}</div>{% endif %}
     {% if booking.delivery_note %}<p class="delivery-note">{{ booking.delivery_note }}</p>{% endif %}
     {% if booking.status == 'completed' and booking.google_drive_url %}<a href="{% url 'delivery_link' booking.pk %}" class="button button-primary">Open your full-resolution gallery <span aria-hidden="true">↗</span></a>{% elif booking.delivery_photos %}<p class="delivery-lock">Full-resolution photographs and the private Drive link unlock after the remaining balance is paid.</p>{% else %}<p class="delivery-lock">Your photographer will add watermarked previews and a private gallery link when your work is ready.</p>{% endif %}
 </section>

@@ -1,9 +1,9 @@
 <aside class="workspace-rail photographer-page-nav" aria-label="Photographer workspace navigation">
     <div class="workspace-rail__identity">
         <span class="role-mark" aria-hidden="true">P</span>
-        <div><strong>Studio space</strong><small>Photographer workspace</small></div>
+        <div><strong>Photographer dashboard</strong><small>Business workspace</small></div>
     </div>
-    <p class="workspace-rail__label">Manage your studio</p>
+    <p class="workspace-rail__label">Manage your business</p>
     <nav>
         <a class="{% if request.resolver_match.url_name in 'photographer_dashboard dashboard' %}active{% endif %}" href="{% url 'photographer_dashboard' %}"><span>01</span>Overview</a>
         <a class="{% if request.resolver_match.url_name in 'booking_list booking_detail booking_update booking_status_update' %}active{% endif %}" href="{% url 'booking_list' %}"><span>02</span>Bookings</a>
@@ -16,5 +16,5 @@
     <nav>
         <a class="{% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}" href="{% url 'profile_edit' %}"><span>07</span>Profile & settings</a>
     </nav>
-    <div class="workspace-rail__footer"><span class="workspace-status-dot"></span><span>Studio is visible</span></div>
+    <div class="workspace-rail__footer"><span class="workspace-status-dot"></span><span>Profile is public</span></div>
 </aside>

@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}AuraCity — photography made personal{% endblock %}
+{% block title %}AuraCity — Book a photographer{% endblock %}
 
 {% block content %}
 <section class="home-hero">
     <div class="hero-copy">
-        <p class="eyebrow"><span class="eyebrow-line"></span> Photography made personal</p>
-        <h1>Choose the right<br><em>way to remember.</em></h1>
-        <p class="hero-lede">AuraCity pairs meaningful stories with photographers and packages built around how you want the day to feel.</p>
+        <p class="eyebrow"><span class="eyebrow-line"></span> Photography services in Nairobi</p>
+        <h1>Book the right<br><em>photographer.</em></h1>
+        <p class="hero-lede">Browse services, compare photographers, and manage your booking in one place.</p>
         <div class="hero-actions">
-            <a href="#packages" class="button button-primary">Explore our packages <span aria-hidden="true">↘</span></a>
-            <a href="{% url 'register_photographer' %}" class="text-link">Share your work <span aria-hidden="true">→</span></a>
+            <a href="#packages" class="button button-primary">View services <span aria-hidden="true">↘</span></a>
+            <a href="{% url 'register_photographer' %}" class="text-link">Join as a photographer <span aria-hidden="true">→</span></a>
         </div>
-        <div class="hero-role-links"><span>Ready to make a plan?</span><a href="{% url 'register_client' %}" class="text-link">Create your brief <span aria-hidden="true">→</span></a></div>
+        <div class="hero-role-links"><span>Looking for a photographer?</span><a href="{% url 'register_client' %}" class="text-link">Create a client account <span aria-hidden="true">→</span></a></div>
         <div class="hero-caption"><span class="caption-dot"></span> Nairobi and beyond</div>
     </div>
     <div class="hero-image-wrap">
@@ -19,34 +19,34 @@
             <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1100&q=85" alt="A couple walking together during a sunlit outdoor wedding">
         </div>
         <div class="hero-note">
-            <span class="note-kicker">Keep the feeling</span>
-            <span class="note-text">not just<br>the picture.</span>
+            <span class="note-kicker">Simple process</span>
+            <span class="note-text">Browse.<br>Book. Pay.</span>
         </div>
         <span class="image-index">01 <span>/ 04</span></span>
     </div>
 </section>
 
-<section class="intro-strip" aria-label="AuraCity introduction">
+<section class="intro-strip" aria-label="How AuraCity works">
     <p class="intro-number">01</p>
-    <p class="intro-statement">The right photographs don’t just show what happened. They bring you back.</p>
-    <p class="intro-copy">AuraCity makes the whole experience clearer: choose a package, find your visual match, and book with confidence.</p>
+    <p class="intro-statement">Book photography without the back and forth.</p>
+    <p class="intro-copy">Choose a service, review photographers, send a request, and track the booking from your dashboard.</p>
 </section>
 
 <section class="section package-section" id="packages">
     <div class="section-heading">
         <div>
-            <p class="eyebrow">Start with the brief</p>
-            <h2>Packages for the<br><em>moments ahead.</em></h2>
+            <p class="eyebrow">Services</p>
+            <h2>Choose what<br><em>you need.</em></h2>
         </div>
-        <p class="section-aside">Clear starting points.<br>Room to make it yours.</p>
+        <p class="section-aside">Clear prices.<br>Easy requests.</p>
     </div>
     <div class="package-grid">
         {% for package in packages %}
         <article class="package-card{% if forloop.first %} package-card-featured{% endif %}">
             <div class="package-card-top"><span>0{{ forloop.counter }}</span><span>{{ package.get_pricing_model_display }}</span></div>
             <h3>{{ package.name }}</h3>
-            <p>{{ package.description|default:"A considered photography experience shaped around your story."|truncatewords:20 }}</p>
-            <div class="package-card-bottom"><strong>{{ package.price_display }}</strong><a href="{% url 'register_client' %}" aria-label="Start a {{ package.name }} booking">Start a brief <span aria-hidden="true">↗</span></a></div>
+            <p>{{ package.description|default:"Choose this service and request a quote."|truncatewords:20 }}</p>
+            <div class="package-card-bottom"><strong>{{ package.price_display }}</strong><a href="{% url 'register_client' %}" aria-label="Request a {{ package.name }} booking">Request booking <span aria-hidden="true">↗</span></a></div>
         </article>
         {% empty %}
         <div class="empty-directory"><p class="eyebrow">Packages are being prepared</p><h3>Tell us what you are planning.</h3><p>We will help you shape the right photography experience.</p><a href="mailto:hello@auracity.co.ke" class="button button-secondary">Start an inquiry <span aria-hidden="true">→</span></a></div>
@@ -56,8 +56,8 @@
 
 <section class="section directory-preview" id="photographers">
     <div class="section-heading">
-        <div><p class="eyebrow">Meet your visual match</p><h2>People with a<br><em>point of view.</em></h2></div>
-        <p class="section-aside">Browse the work first.<br>Choose the feeling.</p>
+        <div><p class="eyebrow">Photographers</p><h2>Find your<br><em>photographer.</em></h2></div>
+        <p class="section-aside">Browse portfolios.<br>Send a request.</p>
     </div>
     <div class="photographer-grid">
         {% for photographer in photographers|slice:":3" %}
@@ -67,66 +67,39 @@
                 <span class="cover-arrow" aria-hidden="true">↗</span>
                 {% if photographer.profile.is_featured %}<span class="featured-label">Featured</span>{% endif %}
             </a>
-            <div class="photographer-meta"><div><h3>{{ photographer.profile.display_name }}</h3><p>{{ photographer.profile.bio|default:"Portraits, celebrations, and honest in-between moments."|truncatewords:12 }}</p></div><span class="card-number">0{{ forloop.counter }}</span></div>
+            <div class="photographer-meta"><div><h3>{{ photographer.profile.display_name }}</h3><p>{{ photographer.profile.bio|default:"View this photographer’s profile and portfolio."|truncatewords:12 }}</p></div><span class="card-number">0{{ forloop.counter }}</span></div>
         </article>
         {% empty %}
-        <div class="empty-directory"><p class="eyebrow">The directory is growing</p><h3>Thoughtful photographers are joining us.</h3><p>Be one of the first to share the work you are proud of.</p><a href="{% url 'register_photographer' %}" class="button button-secondary">Join AuraCity <span aria-hidden="true">→</span></a></div>
+        <div class="empty-directory"><p class="eyebrow">Photographer directory</p><h3>Photographers are joining AuraCity.</h3><p>Register to publish your profile and portfolio.</p><a href="{% url 'register_photographer' %}" class="button button-secondary">Join as a photographer <span aria-hidden="true">→</span></a></div>
         {% endfor %}
-    </div>
-</section>
-
-<section class="manifesto">
-    <div class="manifesto-mark">A</div>
-    <div>
-        <p class="eyebrow">How we see it</p>
-        <h2>Less posing.<br>More <em>presence.</em></h2>
-    </div>
-    <p class="manifesto-copy">The best images are not always the most perfect. They are the ones with a little life left in them — the laugh before the pose, the light through the window, the hand you forgot was there.</p>
-</section>
-
-<section class="story-section" id="about">
-    <div class="story-image">
-        <img src="https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1000&q=85" alt="Photographer working with a camera outdoors">
-    </div>
-    <div class="story-copy">
-        <p class="eyebrow">A considered beginning</p>
-        <h2>Photographs that feel <em>like home.</em></h2>
-        <p>We believe choosing a photographer should feel personal. AuraCity brings thoughtful photographers and people with meaningful stories together in one calm, visual place.</p>
-        <a href="#contact" class="text-link">Tell us what you are planning <span aria-hidden="true">→</span></a>
     </div>
 </section>
 
 <section class="services-section" id="services">
     <div class="section-heading">
-        <div><p class="eyebrow">What we help with</p><h2>Make room for<br><em>the moment.</em></h2></div>
-        <p class="section-aside">Simple booking.<br>Beautiful work.</p>
+        <div><p class="eyebrow">How it works</p><h2>Everything you need<br><em>to get booked.</em></h2></div>
+        <p class="section-aside">One account.<br>One dashboard.</p>
     </div>
     <div class="service-grid">
-        <article><span>01</span><h3>Weddings & celebrations</h3><p>Honest coverage for days that move quickly and deserve to be remembered slowly.</p></article>
-        <article><span>02</span><h3>Portraits & people</h3><p>Personal photographs with enough space for your personality to show through.</p></article>
-        <article><span>03</span><h3>Brands & places</h3><p>Images with character for businesses, products, spaces, and the stories behind them.</p></article>
+        <article><span>01</span><h3>Choose a service</h3><p>Review service types and starting prices before you send a request.</p></article>
+        <article><span>02</span><h3>Book online</h3><p>Choose a photographer, select a date, and keep the request details in one place.</p></article>
+        <article><span>03</span><h3>Track delivery</h3><p>Follow payments and access your private gallery when the booking is complete.</p></article>
     </div>
-</section>
-
-<section class="testimonial-band">
-    <p class="eyebrow">From the people in the frame</p>
-    <blockquote>“The photographs feel exactly like the day felt — warm, unhurried, and completely ours.”</blockquote>
-    <cite>— Amina & Kato, Nairobi</cite>
 </section>
 
 <section class="contact-section" id="contact">
-    <div><p class="eyebrow">Have something in mind?</p><h2>Let&apos;s make it<br><em>worth remembering.</em></h2></div>
-    <div class="contact-copy"><p>Tell us what you are planning and we will help you choose a package and photographer that fit.</p><a href="mailto:hello@auracity.co.ke" class="button button-primary">Start an inquiry <span aria-hidden="true">↗</span></a><small>We usually reply within one business day.</small></div>
+    <div><p class="eyebrow">Need help?</p><h2>Talk to the<br><em>AuraCity team.</em></h2></div>
+    <div class="contact-copy"><p>Send us your requirements and we will help you choose a service and photographer.</p><a href="mailto:hello@auracity.co.ke" class="button button-primary">Contact us <span aria-hidden="true">↗</span></a><small>We usually reply within one business day.</small></div>
 </section>
 
 <section class="cta-band">
     <div>
         <p class="eyebrow">For photographers</p>
-        <h2>Your work deserves<br>a good <em>home.</em></h2>
+        <h2>Get more<br><em>bookings.</em></h2>
     </div>
     <div class="cta-band-action">
-        <p>Put your perspective in front of people looking for something real.</p>
-        <a href="{% url 'register_photographer' %}" class="button button-primary">Join us <span aria-hidden="true">↗</span></a>
+        <p>Publish your profile, show your portfolio, and manage client requests.</p>
+        <a href="{% url 'register_photographer' %}" class="button button-primary">Create photographer account <span aria-hidden="true">↗</span></a>
     </div>
 </section>
 {% endblock %}
